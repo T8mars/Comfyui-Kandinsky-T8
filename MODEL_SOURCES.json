@@ -1,0 +1,83 @@
+[
+  {
+    "repo": "kandinskylab/Kandinsky-6.0-Lite-5s-Diffusers",
+    "revision": "5686616f04318cbec7b0a4978b4ff1697395de15",
+    "filename": "transformer/diffusion_pytorch_model.safetensors",
+    "destination": "sources/lite.safetensors",
+    "size": 7476528464,
+    "sha256": "1550090ca56fed8c75dda0d30f8aa7b46775e8e1ebb086b70ad532e40eb878f9",
+    "actual_sha256": "1550090ca56fed8c75dda0d30f8aa7b46775e8e1ebb086b70ad532e40eb878f9"
+  },
+  {
+    "repo": "kandinskylab/Kandinsky-6.0-Lite-distill-5s-Diffusers",
+    "revision": "efbaeb9961770cc82fece5b9cb2197049d8c983c",
+    "filename": "transformer/diffusion_pytorch_model.safetensors",
+    "destination": "sources/lite-distill.safetensors",
+    "size": 6381599096,
+    "sha256": "b1b52668561d9138d93bb4da13c9999e615bf569be9f8cf65732d54652447f53",
+    "actual_sha256": "b1b52668561d9138d93bb4da13c9999e615bf569be9f8cf65732d54652447f53"
+  },
+  {
+    "repo": "kandinskylab/Kandinsky-6.0-Pro-distill-5s-Diffusers",
+    "revision": "1018d5828716e8bea3de99609f45c924de9c5564",
+    "filename": "transformer/diffusion_pytorch_model.safetensors",
+    "destination": "sources/pro-distill.safetensors",
+    "size": 60344993576,
+    "sha256": "f84ea3266560bbd1f203a874b8cee43e080073820facaf3306cab8fae2798a97",
+    "actual_sha256": "f84ea3266560bbd1f203a874b8cee43e080073820facaf3306cab8fae2798a97"
+  },
+  {
+    "repo": "Comfy-Org/Qwen-Image_ComfyUI",
+    "revision": "1f12b17be14c89b026c51a91d67c32f84bb047bc",
+    "filename": "split_files/text_encoders/qwen_2.5_vl_7b.safetensors",
+    "destination": "text_encoders/qwen_2.5_vl_7b.safetensors",
+    "size": 16584415576,
+    "sha256": "cfafd739459bc86257397259f612a9aee88e5b98e85b5c0d0d1717e898b3463a",
+    "actual_sha256": "cfafd739459bc86257397259f612a9aee88e5b98e85b5c0d0d1717e898b3463a"
+  },
+  {
+    "repo": "Comfy-Org/HunyuanVideo_repackaged",
+    "revision": "533a43813f01517d9e624f9e824a85bb94094120",
+    "filename": "split_files/text_encoders/clip_l.safetensors",
+    "destination": "text_encoders/clip_l.safetensors",
+    "size": 246144152,
+    "sha256": "660c6f5b1abae9dc498ac2d21e1347d2abdb0cf6c0c0c8576cd796491d9a6cdd",
+    "actual_sha256": "660c6f5b1abae9dc498ac2d21e1347d2abdb0cf6c0c0c8576cd796491d9a6cdd"
+  },
+  {
+    "repo": "Comfy-Org/HunyuanVideo_repackaged",
+    "revision": "533a43813f01517d9e624f9e824a85bb94094120",
+    "filename": "split_files/vae/hunyuan_video_vae_bf16.safetensors",
+    "destination": "vae/hunyuan_video_vae_bf16.safetensors",
+    "size": 492984198,
+    "sha256": "e8f8553275406d84ccf22e7a47601650d8f98bdb8aa9ccfdd6506b57a9701aed",
+    "actual_sha256": "e8f8553275406d84ccf22e7a47601650d8f98bdb8aa9ccfdd6506b57a9701aed"
+  },
+  {
+    "repo": "hkchengrex/MMAudio",
+    "revision": "eb13a1a98fdbec91753775c57b074ccdfc60587c",
+    "filename": "ext_weights/v1-44.pth",
+    "destination": "audio_vae/v1-44.pth",
+    "size": 1221942998,
+    "sha256": "ab6cc15dc31947675f75c950c41f4dcfd0d6d1817555ac871f809ec388e4651a",
+    "actual_sha256": "ab6cc15dc31947675f75c950c41f4dcfd0d6d1817555ac871f809ec388e4651a"
+  },
+  {
+    "repo": "nvidia/bigvgan_v2_44khz_128band_512x",
+    "revision": "95a9d1dcb12906c03edd938d77b9333d6ded7dfb",
+    "filename": "bigvgan_generator.pt",
+    "destination": "audio_vae/bigvgan_vocoder/bigvgan_generator.pt",
+    "size": 489041291,
+    "sha256": "d9fe7ec6bd0b44ed9d66973d5012d8181c1570b01e5c72df51973e241dccd357",
+    "actual_sha256": "d9fe7ec6bd0b44ed9d66973d5012d8181c1570b01e5c72df51973e241dccd357"
+  },
+  {
+    "repo": "nvidia/bigvgan_v2_44khz_128band_512x",
+    "revision": "95a9d1dcb12906c03edd938d77b9333d6ded7dfb",
+    "filename": "config.json",
+    "destination": "audio_vae/bigvgan_vocoder/config.json",
+    "size": 1403,
+    "sha256": null,
+    "actual_sha256": "65b7f487bfaf15256056a75f6667ef5f640214c981922a111927873705ea4ddb"
+  }
+]

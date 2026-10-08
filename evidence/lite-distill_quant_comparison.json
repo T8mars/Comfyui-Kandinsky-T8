@@ -1,0 +1,16 @@
+{
+  "model_base_sha256": "0a830bacf396ec5bb5074abfddd1ae785e0d926e04cb4d20095d3e93b27bd431",
+  "preserved_fp32_parameters": 423,
+  "streams": {
+    "audio": {
+      "relative_l2": 0.034141767770051956,
+      "max_absolute": 0.15234375,
+      "cosine": 0.9994254112243652
+    },
+    "video": {
+      "relative_l2": 0.009783661924302578,
+      "max_absolute": 0.09375,
+      "cosine": 0.9998868107795715
+    }
+  }
+}

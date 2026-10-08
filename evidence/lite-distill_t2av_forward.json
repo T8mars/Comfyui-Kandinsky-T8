@@ -1,0 +1,34 @@
+{
+  "checkpoint": "D:\\kandinsky-6\\models\\sources\\lite-distill.safetensors",
+  "patcher": "ModelPatcher",
+  "grids": 10,
+  "quantized_layers": 0,
+  "preserved_fp32_parameters": 423,
+  "model_base_sha256": "0a830bacf396ec5bb5074abfddd1ae785e0d926e04cb4d20095d3e93b27bd431",
+  "reference": false,
+  "outputs": [
+    {
+      "shape": [
+        1,
+        160,
+        5,
+        32,
+        32
+      ],
+      "finite": true,
+      "rms": 1.4027608633041382
+    },
+    {
+      "shape": [
+        1,
+        31,
+        400
+      ],
+      "finite": true,
+      "rms": 0.8575709462165833
+    }
+  ],
+  "elapsed_seconds": 5.438000000000102,
+  "peak_allocated": 6535189504,
+  "peak_reserved": 6689914880
+}

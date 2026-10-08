@@ -1,0 +1,381 @@
+{
+  "prompt_id": "ccc64813-67e7-4637-bdcb-f8731e81126c",
+  "workflow": "D:\\kandinsky-6\\ComfyUI-Kandinsky6-INT8\\example_workflows\\api\\K6 INT8 PiFlow Text to Video+Audio.json",
+  "elapsed_seconds": 746.9210000000003,
+  "graph": {
+    "1": {
+      "class_type": "UNETLoader",
+      "inputs": {
+        "unet_name": "k6_pro_distill_int8_convrot.safetensors",
+        "weight_dtype": "default"
+      }
+    },
+    "2": {
+      "class_type": "DualCLIPLoader",
+      "inputs": {
+        "clip_name1": "qwen_2.5_vl_7b.safetensors",
+        "clip_name2": "clip_l.safetensors",
+        "type": "kandinsky5",
+        "device": "default"
+      }
+    },
+    "3": {
+      "class_type": "VAELoader",
+      "inputs": {
+        "vae_name": "hunyuan_video_vae_bf16.safetensors"
+      }
+    },
+    "4": {
+      "class_type": "Kandinsky6AudioVAELoader",
+      "inputs": {
+        "tod_vae": "v1-44.pth",
+        "bigvgan_dir": "bigvgan_vocoder",
+        "mode": "44k",
+        "scaling_factor": 0.417,
+        "model_variant": "pretrain / distill"
+      }
+    },
+    "5": {
+      "class_type": "Kandinsky6TextEncode",
+      "inputs": {
+        "clip": [
+          "2",
+          0
+        ],
+        "video_caption": "Two scarlet macaws with brilliant red, yellow and blue feathers perch on a mossy branch in a lush tropical rainforest. One spreads its wings and flaps them, then both turn their heads and gently preen each other. Sunlight streams through the green canopy. Cinematic nature documentary shot.",
+        "audio_caption": "Loud macaw squawks, rustling feathers and leaves, lively rainforest ambience with distant birdsong."
+      }
+    },
+    "6": {
+      "class_type": "Kandinsky6TextEncode",
+      "inputs": {
+        "clip": [
+          "2",
+          0
+        ],
+        "video_caption": "Static, cartoon, worst quality, low quality, deformed",
+        "audio_caption": ""
+      }
+    },
+    "7": {
+      "class_type": "Kandinsky6EmptyLatent",
+      "inputs": {
+        "width": 864,
+        "height": 480,
+        "length": 121,
+        "fps": 24.0,
+        "batch_size": 1
+      }
+    },
+    "8": {
+      "class_type": "Kandinsky6Sampler",
+      "inputs": {
+        "model": [
+          "1",
+          0
+        ],
+        "seed": 42,
+        "steps": 10,
+        "cfg": 1.0,
+        "sampler_name": "euler",
+        "scheduler": "simple",
+        "positive": [
+          "5",
+          0
+        ],
+        "negative": [
+          "6",
+          0
+        ],
+        "latent_image": [
+          "7",
+          0
+        ],
+        "denoise": 1.0
+      }
+    },
+    "9": {
+      "class_type": "VAEDecode",
+      "inputs": {
+        "samples": [
+          "8",
+          0
+        ],
+        "vae": [
+          "3",
+          0
+        ]
+      }
+    },
+    "10": {
+      "class_type": "Kandinsky6AudioVAEDecode",
+      "inputs": {
+        "audio_vae": [
+          "4",
+          0
+        ],
+        "joint_latent": [
+          "8",
+          0
+        ]
+      }
+    },
+    "11": {
+      "class_type": "CreateVideo",
+      "inputs": {
+        "images": [
+          "9",
+          0
+        ],
+        "fps": [
+          "7",
+          1
+        ],
+        "audio": [
+          "10",
+          0
+        ]
+      }
+    },
+    "12": {
+      "class_type": "SaveVideo",
+      "inputs": {
+        "video": [
+          "11",
+          0
+        ],
+        "filename_prefix": "kandinsky6/pro_distill_t2av",
+        "format": "mp4",
+        "format.codec": "h264",
+        "format.codec.encoding": "auto"
+      }
+    }
+  },
+  "history": {
+    "prompt": [
+      5,
+      "ccc64813-67e7-4637-bdcb-f8731e81126c",
+      {
+        "1": {
+          "class_type": "UNETLoader",
+          "inputs": {
+            "unet_name": "k6_pro_distill_int8_convrot.safetensors",
+            "weight_dtype": "default"
+          }
+        },
+        "2": {
+          "class_type": "DualCLIPLoader",
+          "inputs": {
+            "clip_name1": "qwen_2.5_vl_7b.safetensors",
+            "clip_name2": "clip_l.safetensors",
+            "type": "kandinsky5",
+            "device": "default"
+          }
+        },
+        "3": {
+          "class_type": "VAELoader",
+          "inputs": {
+            "vae_name": "hunyuan_video_vae_bf16.safetensors"
+          }
+        },
+        "4": {
+          "class_type": "Kandinsky6AudioVAELoader",
+          "inputs": {
+            "tod_vae": "v1-44.pth",
+            "bigvgan_dir": "bigvgan_vocoder",
+            "mode": "44k",
+            "scaling_factor": 0.417,
+            "model_variant": "pretrain / distill"
+          }
+        },
+        "5": {
+          "class_type": "Kandinsky6TextEncode",
+          "inputs": {
+            "clip": [
+              "2",
+              0
+            ],
+            "video_caption": "Two scarlet macaws with brilliant red, yellow and blue feathers perch on a mossy branch in a lush tropical rainforest. One spreads its wings and flaps them, then both turn their heads and gently preen each other. Sunlight streams through the green canopy. Cinematic nature documentary shot.",
+            "audio_caption": "Loud macaw squawks, rustling feathers and leaves, lively rainforest ambience with distant birdsong."
+          }
+        },
+        "6": {
+          "class_type": "Kandinsky6TextEncode",
+          "inputs": {
+            "clip": [
+              "2",
+              0
+            ],
+            "video_caption": "Static, cartoon, worst quality, low quality, deformed",
+            "audio_caption": ""
+          }
+        },
+        "7": {
+          "class_type": "Kandinsky6EmptyLatent",
+          "inputs": {
+            "width": 864,
+            "height": 480,
+            "length": 121,
+            "fps": 24.0,
+            "batch_size": 1
+          }
+        },
+        "8": {
+          "class_type": "Kandinsky6Sampler",
+          "inputs": {
+            "model": [
+              "1",
+              0
+            ],
+            "seed": 42,
+            "steps": 10,
+            "cfg": 1.0,
+            "sampler_name": "euler",
+            "scheduler": "simple",
+            "positive": [
+              "5",
+              0
+            ],
+            "negative": [
+              "6",
+              0
+            ],
+            "latent_image": [
+              "7",
+              0
+            ],
+            "denoise": 1.0
+          }
+        },
+        "9": {
+          "class_type": "VAEDecode",
+          "inputs": {
+            "samples": [
+              "8",
+              0
+            ],
+            "vae": [
+              "3",
+              0
+            ]
+          }
+        },
+        "10": {
+          "class_type": "Kandinsky6AudioVAEDecode",
+          "inputs": {
+            "audio_vae": [
+              "4",
+              0
+            ],
+            "joint_latent": [
+              "8",
+              0
+            ]
+          }
+        },
+        "11": {
+          "class_type": "CreateVideo",
+          "inputs": {
+            "images": [
+              "9",
+              0
+            ],
+            "fps": [
+              "7",
+              1
+            ],
+            "audio": [
+              "10",
+              0
+            ]
+          }
+        },
+        "12": {
+          "class_type": "SaveVideo",
+          "inputs": {
+            "video": [
+              "11",
+              0
+            ],
+            "filename_prefix": "kandinsky6/pro_distill_t2av",
+            "format": "mp4",
+            "format.codec": "h264",
+            "format.codec.encoding": "auto"
+          }
+        }
+      },
+      {
+        "client_id": "ce37b98d-6c33-4cb5-963b-a9865e2ada10",
+        "create_time": 1791438251047
+      },
+      [
+        "12"
+      ]
+    ],
+    "outputs": {
+      "12": {
+        "images": [
+          {
+            "filename": "pro_distill_t2av_00001_.mp4",
+            "subfolder": "kandinsky6",
+            "type": "output",
+            "metadata": {
+              "kind": "video",
+              "width": 864,
+              "height": 480,
+              "duration": 5.041666666666667,
+              "fps": 24.0,
+              "frame_count": 121
+            }
+          }
+        ],
+        "animated": [
+          true
+        ]
+      }
+    },
+    "status": {
+      "status_str": "success",
+      "completed": true,
+      "messages": [
+        [
+          "execution_start",
+          {
+            "prompt_id": "ccc64813-67e7-4637-bdcb-f8731e81126c",
+            "timestamp": 1791438251070
+          }
+        ],
+        [
+          "execution_cached",
+          {
+            "nodes": [
+              "2",
+              "3",
+              "4",
+              "5",
+              "6",
+              "7"
+            ],
+            "prompt_id": "ccc64813-67e7-4637-bdcb-f8731e81126c",
+            "timestamp": 1791438251105
+          }
+        ],
+        [
+          "execution_success",
+          {
+            "prompt_id": "ccc64813-67e7-4637-bdcb-f8731e81126c",
+            "timestamp": 1791438996501
+          }
+        ]
+      ]
+    },
+    "meta": {
+      "12": {
+        "node_id": "12",
+        "display_node": "12",
+        "parent_node": null,
+        "real_node_id": "12"
+      }
+    }
+  }
+}

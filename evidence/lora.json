@@ -1,0 +1,9 @@
+{
+  "official_lora_loader": true,
+  "patched_key": "diffusion_model.visual_blocks.0.audioT.self_attention.to_query.weight",
+  "quantized_type": "QuantizedTensor",
+  "convrot": true,
+  "group": 64,
+  "weight_change_l2": 1.689426302909851,
+  "output_finite": true
+}

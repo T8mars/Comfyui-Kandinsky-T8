@@ -1,0 +1,20 @@
+{
+  "path": "D:\\kandinsky-6\\.research\\ComfyUI\\output\\kandinsky6\\lite_distill_i2av_00001_.mp4",
+  "width": 864,
+  "height": 480,
+  "fps": 24.0,
+  "video_duration": 5.041666666666667,
+  "video_codec": "h264",
+  "audio_sample_rate": 44100,
+  "audio_channels": 1,
+  "audio_duration": 5.0416780045351475,
+  "audio_codec": "aac",
+  "decoded_frames": 121,
+  "middle_frame_mean": 0.4395890533924103,
+  "middle_frame_std": 0.20366327464580536,
+  "decoded_audio_values": 222338,
+  "audio_finite": true,
+  "audio_rms": 0.012533729895949364,
+  "audio_peak": 0.14016547799110413,
+  "audio_near_saturation_fraction": 0.0
+}

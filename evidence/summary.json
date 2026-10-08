@@ -1,0 +1,229 @@
+{
+  "tested_hardware": "RTX 5090 Laptop 24 GB, 64 GB RAM, Windows",
+  "full_runs": [
+    {
+      "name": "lite_distill_t2av_full",
+      "model": "k6_lite_distill_int8_convrot.safetensors",
+      "prompt_id": "fe355511-96c5-40f5-a9be-1f11394c65af",
+      "execution_seconds": 163.122,
+      "video": "D:\\kandinsky-6\\.research\\ComfyUI\\output\\kandinsky6\\lite_distill_t2av_00001_.mp4",
+      "media_qc": {
+        "path": "D:\\kandinsky-6\\.research\\ComfyUI\\output\\kandinsky6\\lite_distill_t2av_00001_.mp4",
+        "width": 864,
+        "height": 480,
+        "fps": 24.0,
+        "video_duration": 5.041666666666667,
+        "video_codec": "h264",
+        "audio_sample_rate": 44100,
+        "audio_channels": 1,
+        "audio_duration": 5.0416780045351475,
+        "audio_codec": "aac",
+        "decoded_frames": 121,
+        "middle_frame_mean": 0.39932477474212646,
+        "middle_frame_std": 0.2617514431476593,
+        "decoded_audio_values": 222338,
+        "audio_finite": true,
+        "audio_rms": 0.09019077569246292,
+        "audio_peak": 0.8915311098098755,
+        "audio_near_saturation_fraction": 0.0
+      }
+    },
+    {
+      "name": "lite_distill_i2av_full",
+      "model": "k6_lite_distill_int8_convrot.safetensors",
+      "prompt_id": "4436e63c-fe80-486b-97fc-43dd0302690f",
+      "execution_seconds": 136.394,
+      "video": "D:\\kandinsky-6\\.research\\ComfyUI\\output\\kandinsky6\\lite_distill_i2av_00001_.mp4",
+      "media_qc": {
+        "path": "D:\\kandinsky-6\\.research\\ComfyUI\\output\\kandinsky6\\lite_distill_i2av_00001_.mp4",
+        "width": 864,
+        "height": 480,
+        "fps": 24.0,
+        "video_duration": 5.041666666666667,
+        "video_codec": "h264",
+        "audio_sample_rate": 44100,
+        "audio_channels": 1,
+        "audio_duration": 5.0416780045351475,
+        "audio_codec": "aac",
+        "decoded_frames": 121,
+        "middle_frame_mean": 0.4395890533924103,
+        "middle_frame_std": 0.20366327464580536,
+        "decoded_audio_values": 222338,
+        "audio_finite": true,
+        "audio_rms": 0.012533729895949364,
+        "audio_peak": 0.14016547799110413,
+        "audio_near_saturation_fraction": 0.0
+      }
+    },
+    {
+      "name": "lite_t2av_full",
+      "model": "k6_lite_int8_convrot.safetensors",
+      "prompt_id": "0bf98326-f913-48e5-9db9-a2ce066af88b",
+      "execution_seconds": 1057.675,
+      "video": "D:\\kandinsky-6\\.research\\ComfyUI\\output\\kandinsky6\\lite_t2av_00001_.mp4",
+      "media_qc": {
+        "path": "D:\\kandinsky-6\\.research\\ComfyUI\\output\\kandinsky6\\lite_t2av_00001_.mp4",
+        "width": 864,
+        "height": 480,
+        "fps": 24.0,
+        "video_duration": 5.041666666666667,
+        "video_codec": "h264",
+        "audio_sample_rate": 44100,
+        "audio_channels": 1,
+        "audio_duration": 5.0416780045351475,
+        "audio_codec": "aac",
+        "decoded_frames": 121,
+        "middle_frame_mean": 0.2839062213897705,
+        "middle_frame_std": 0.2752129137516022,
+        "decoded_audio_values": 222338,
+        "audio_finite": true,
+        "audio_rms": 0.09995721280574799,
+        "audio_peak": 0.9671298265457153,
+        "audio_near_saturation_fraction": 0.0
+      }
+    },
+    {
+      "name": "lite_i2av_full",
+      "model": "k6_lite_int8_convrot.safetensors",
+      "prompt_id": "77708a03-d3bc-4375-ae1e-efcea7dd29b3",
+      "execution_seconds": 1075.135,
+      "video": "D:\\kandinsky-6\\.research\\ComfyUI\\output\\kandinsky6\\lite_i2av_00001_.mp4",
+      "media_qc": {
+        "path": "D:\\kandinsky-6\\.research\\ComfyUI\\output\\kandinsky6\\lite_i2av_00001_.mp4",
+        "width": 864,
+        "height": 480,
+        "fps": 24.0,
+        "video_duration": 5.041666666666667,
+        "video_codec": "h264",
+        "audio_sample_rate": 44100,
+        "audio_channels": 1,
+        "audio_duration": 5.0416780045351475,
+        "audio_codec": "aac",
+        "decoded_frames": 121,
+        "middle_frame_mean": 0.43831509351730347,
+        "middle_frame_std": 0.24443963170051575,
+        "decoded_audio_values": 222338,
+        "audio_finite": true,
+        "audio_rms": 0.026706453412771225,
+        "audio_peak": 0.4537425637245178,
+        "audio_near_saturation_fraction": 0.0
+      }
+    },
+    {
+      "name": "pro_distill_t2av_full",
+      "model": "k6_pro_distill_int8_convrot.safetensors",
+      "prompt_id": "ccc64813-67e7-4637-bdcb-f8731e81126c",
+      "execution_seconds": 745.431,
+      "video": "D:\\kandinsky-6\\.research\\ComfyUI\\output\\kandinsky6\\pro_distill_t2av_00001_.mp4",
+      "media_qc": {
+        "path": "D:\\kandinsky-6\\.research\\ComfyUI\\output\\kandinsky6\\pro_distill_t2av_00001_.mp4",
+        "width": 864,
+        "height": 480,
+        "fps": 24.0,
+        "video_duration": 5.041666666666667,
+        "video_codec": "h264",
+        "audio_sample_rate": 44100,
+        "audio_channels": 1,
+        "audio_duration": 5.0416780045351475,
+        "audio_codec": "aac",
+        "decoded_frames": 121,
+        "middle_frame_mean": 0.25647664070129395,
+        "middle_frame_std": 0.23420652747154236,
+        "decoded_audio_values": 222338,
+        "audio_finite": true,
+        "audio_rms": 0.014777577482163906,
+        "audio_peak": 0.139884352684021,
+        "audio_near_saturation_fraction": 0.0
+      }
+    },
+    {
+      "name": "pro_distill_i2av_full",
+      "model": "k6_pro_distill_int8_convrot.safetensors",
+      "prompt_id": "817d8dfd-8db1-4482-91db-f430b96245f7",
+      "execution_seconds": 945.404,
+      "video": "D:\\kandinsky-6\\.research\\ComfyUI\\output\\kandinsky6\\pro_distill_i2av_00001_.mp4",
+      "media_qc": {
+        "path": "D:\\kandinsky-6\\.research\\ComfyUI\\output\\kandinsky6\\pro_distill_i2av_00001_.mp4",
+        "width": 864,
+        "height": 480,
+        "fps": 24.0,
+        "video_duration": 5.041666666666667,
+        "video_codec": "h264",
+        "audio_sample_rate": 44100,
+        "audio_channels": 1,
+        "audio_duration": 5.0416780045351475,
+        "audio_codec": "aac",
+        "decoded_frames": 121,
+        "middle_frame_mean": 0.5135220289230347,
+        "middle_frame_std": 0.25510287284851074,
+        "decoded_audio_values": 222338,
+        "audio_finite": true,
+        "audio_rms": 0.018910249695181847,
+        "audio_peak": 0.2573436498641968,
+        "audio_near_saturation_fraction": 0.0
+      }
+    },
+    {
+      "name": "lite_distill_original_t2av_full",
+      "model": "k6_lite_distill_original.safetensors",
+      "prompt_id": "aa4c3054-5dcc-40e9-b8c6-95b6c20eec16",
+      "execution_seconds": 192.417,
+      "video": "D:\\kandinsky-6\\.research\\ComfyUI\\output\\kandinsky6\\lite_distill_original_t2av_00001_.mp4",
+      "media_qc": {
+        "path": "D:\\kandinsky-6\\.research\\ComfyUI\\output\\kandinsky6\\lite_distill_original_t2av_00001_.mp4",
+        "width": 864,
+        "height": 480,
+        "fps": 24.0,
+        "video_duration": 5.041666666666667,
+        "video_codec": "h264",
+        "audio_sample_rate": 44100,
+        "audio_channels": 1,
+        "audio_duration": 5.0416780045351475,
+        "audio_codec": "aac",
+        "decoded_frames": 121,
+        "middle_frame_mean": 0.4020574986934662,
+        "middle_frame_std": 0.2613556683063507,
+        "decoded_audio_values": 222338,
+        "audio_finite": true,
+        "audio_rms": 0.08882473409175873,
+        "audio_peak": 0.8625754117965698,
+        "audio_near_saturation_fraction": 0.0
+      }
+    }
+  ],
+  "converted_models": [
+    {
+      "output": "D:\\kandinsky-6\\models\\diffusion_models\\k6_lite_int8_convrot.safetensors",
+      "output_bytes": 4868860174,
+      "output_sha256": "4d7df4682fdeb1fb840a9a520fdb0069f413638ec27d6e3d9abe451b2f4c24bd",
+      "source_sha256": "1550090ca56fed8c75dda0d30f8aa7b46775e8e1ebb086b70ad532e40eb878f9",
+      "quantized_layers": 920,
+      "groups": {
+        "64": 426,
+        "256": 494
+      }
+    },
+    {
+      "output": "D:\\kandinsky-6\\models\\diffusion_models\\k6_lite_distill_int8_convrot.safetensors",
+      "output_bytes": 3773931918,
+      "output_sha256": "e52bc575cc1e8b0f325c11a97201709afc386adcdd10811f5323fe939ae661de",
+      "source_sha256": "b1b52668561d9138d93bb4da13c9999e615bf569be9f8cf65732d54652447f53",
+      "quantized_layers": 920,
+      "groups": {
+        "64": 426,
+        "256": 494
+      }
+    },
+    {
+      "output": "D:\\kandinsky-6\\models\\diffusion_models\\k6_pro_distill_int8_convrot.safetensors",
+      "output_bytes": 34970473976,
+      "output_sha256": "0dfa50b79f2ef11446951b8cc4d511159f9c1ced59c9ff0a594e56817d32a1a6",
+      "source_sha256": "f84ea3266560bbd1f203a874b8cee43e080073820facaf3306cab8fae2798a97",
+      "quantized_layers": 1728,
+      "groups": {
+        "256": 1728
+      }
+    }
+  ],
+  "scope_limit": "Verified Lite, Lite distill and Pro distill only. Ordinary Pro excluded from the published scope."
+}

@@ -1,0 +1,33 @@
+{
+  "checkpoint": "D:\\kandinsky-6\\models\\diffusion_models\\k6_lite_distill_int8_convrot.safetensors",
+  "sampler": "Kandinsky6Sampler",
+  "reference": true,
+  "steps": 2,
+  "context_lengths": [
+    32,
+    15
+  ],
+  "outputs": [
+    {
+      "shape": [
+        1,
+        16,
+        5,
+        32,
+        32
+      ],
+      "finite": true,
+      "rms": 2.1039843559265137
+    },
+    {
+      "shape": [
+        1,
+        31,
+        40
+      ],
+      "finite": true,
+      "rms": 0.9250564575195312
+    }
+  ],
+  "elapsed_seconds": 6.311999999999898
+}

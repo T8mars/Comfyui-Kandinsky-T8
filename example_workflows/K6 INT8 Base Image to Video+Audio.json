@@ -1,0 +1,967 @@
+{
+  "last_node_id": 30,
+  "last_link_id": 22,
+  "nodes": [
+    {
+      "id": 1,
+      "type": "UNETLoader",
+      "pos": [
+        50,
+        50
+      ],
+      "size": [
+        340,
+        90
+      ],
+      "flags": {},
+      "order": 0,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "MODEL",
+          "type": "MODEL",
+          "links": [
+            10
+          ],
+          "slot_index": 0
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "UNETLoader"
+      },
+      "widgets_values": [
+        "k6_lite_int8_convrot.safetensors",
+        "default"
+      ]
+    },
+    {
+      "id": 2,
+      "type": "DualCLIPLoader",
+      "pos": [
+        50,
+        280
+      ],
+      "size": [
+        340,
+        130
+      ],
+      "flags": {},
+      "order": 1,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "CLIP",
+          "type": "CLIP",
+          "links": [
+            1,
+            2
+          ],
+          "slot_index": 0
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "DualCLIPLoader",
+        "models": [
+          {
+            "name": "qwen_2.5_vl_7b.safetensors",
+            "directory": "text_encoders",
+            "url": "https://huggingface.co/Comfy-Org/Qwen-Image_ComfyUI/resolve/1f12b17be14c89b026c51a91d67c32f84bb047bc/split_files/text_encoders/qwen_2.5_vl_7b.safetensors"
+          },
+          {
+            "name": "clip_l.safetensors",
+            "directory": "text_encoders",
+            "url": "https://huggingface.co/Comfy-Org/HunyuanVideo_repackaged/resolve/533a43813f01517d9e624f9e824a85bb94094120/split_files/text_encoders/clip_l.safetensors"
+          }
+        ]
+      },
+      "widgets_values": [
+        "qwen_2.5_vl_7b.safetensors",
+        "clip_l.safetensors",
+        "kandinsky5",
+        "default"
+      ]
+    },
+    {
+      "id": 3,
+      "type": "VAELoader",
+      "pos": [
+        50,
+        490
+      ],
+      "size": [
+        340,
+        70
+      ],
+      "flags": {},
+      "order": 2,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "VAE",
+          "type": "VAE",
+          "links": [
+            5,
+            16
+          ],
+          "slot_index": 0
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "VAELoader",
+        "models": [
+          {
+            "name": "hunyuan_video_vae_bf16.safetensors",
+            "directory": "vae",
+            "url": "https://huggingface.co/Comfy-Org/HunyuanVideo_repackaged/resolve/533a43813f01517d9e624f9e824a85bb94094120/split_files/vae/hunyuan_video_vae_bf16.safetensors"
+          }
+        ]
+      },
+      "widgets_values": [
+        "hunyuan_video_vae_bf16.safetensors"
+      ]
+    },
+    {
+      "id": 4,
+      "type": "Kandinsky6AudioVAELoader",
+      "pos": [
+        50,
+        690
+      ],
+      "size": [
+        360,
+        130
+      ],
+      "flags": {},
+      "order": 3,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "VAE",
+          "type": "VAE",
+          "links": [
+            17
+          ],
+          "slot_index": 0
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "Kandinsky6AudioVAELoader",
+        "kandinsky6_required_files": [
+          {
+            "name": "v1-44.pth",
+            "directory": "audio_vae",
+            "url": "https://huggingface.co/hkchengrex/MMAudio/resolve/eb13a1a98fdbec91753775c57b074ccdfc60587c/ext_weights/v1-44.pth"
+          },
+          {
+            "name": "bigvgan_vocoder/bigvgan_generator.pt",
+            "directory": "audio_vae",
+            "url": "https://huggingface.co/nvidia/bigvgan_v2_44khz_128band_512x/resolve/95a9d1dcb12906c03edd938d77b9333d6ded7dfb/bigvgan_generator.pt"
+          },
+          {
+            "name": "bigvgan_vocoder/config.json",
+            "directory": "audio_vae",
+            "url": "https://huggingface.co/nvidia/bigvgan_v2_44khz_128band_512x/resolve/95a9d1dcb12906c03edd938d77b9333d6ded7dfb/config.json"
+          }
+        ]
+      },
+      "widgets_values": [
+        "v1-44.pth",
+        "bigvgan_vocoder",
+        "44k",
+        0.5302,
+        "base"
+      ]
+    },
+    {
+      "id": 5,
+      "type": "Kandinsky6TextEncode",
+      "pos": [
+        470,
+        50
+      ],
+      "size": [
+        390,
+        230
+      ],
+      "flags": {},
+      "order": 4,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "clip",
+          "type": "CLIP",
+          "link": 1
+        }
+      ],
+      "outputs": [
+        {
+          "name": "CONDITIONING",
+          "type": "CONDITIONING",
+          "links": [
+            6
+          ],
+          "slot_index": 0
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "Kandinsky6TextEncode"
+      },
+      "widgets_values": [
+        "A cinematic close-up of a young adult woman in soft daylight. She looks into the camera and clearly says <S>Look there!<E>, her lips moving naturally with the words. She smoothly turns her head toward a window and finishes with a warm smile. Static camera, continuous shot.",
+        "A clear, natural female voice. Quiet indoor ambience, no music."
+      ],
+      "title": "Encode expanded video and audio prompt"
+    },
+    {
+      "id": 6,
+      "type": "Kandinsky6TextEncode",
+      "pos": [
+        470,
+        390
+      ],
+      "size": [
+        390,
+        230
+      ],
+      "flags": {},
+      "order": 5,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "clip",
+          "type": "CLIP",
+          "link": 2
+        }
+      ],
+      "outputs": [
+        {
+          "name": "CONDITIONING",
+          "type": "CONDITIONING",
+          "links": [
+            7
+          ],
+          "slot_index": 0
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "Kandinsky6TextEncode"
+      },
+      "widgets_values": [
+        "Static, cartoon, worst quality, low quality, deformed",
+        ""
+      ],
+      "title": "Negative video and audio prompt"
+    },
+    {
+      "id": 7,
+      "type": "Kandinsky6EmptyLatent",
+      "pos": [
+        470,
+        720
+      ],
+      "size": [
+        300,
+        150
+      ],
+      "flags": {},
+      "order": 6,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "joint_latent",
+          "type": "LATENT",
+          "links": [
+            8
+          ],
+          "slot_index": 0
+        },
+        {
+          "name": "fps",
+          "type": "FLOAT",
+          "links": [
+            20
+          ],
+          "slot_index": 1
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "Kandinsky6EmptyLatent"
+      },
+      "widgets_values": [
+        864,
+        480,
+        121,
+        24.0,
+        1
+      ]
+    },
+    {
+      "id": 8,
+      "type": "LoadImage",
+      "pos": [
+        470,
+        1000
+      ],
+      "size": [
+        340,
+        310
+      ],
+      "flags": {},
+      "order": 7,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "links": [
+            3
+          ],
+          "slot_index": 0
+        },
+        {
+          "name": "MASK",
+          "type": "MASK",
+          "links": [],
+          "slot_index": 1
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "LoadImage"
+      },
+      "widgets_values": [
+        "kandinsky6/kandinsky6_i2va_portrait.png",
+        "image"
+      ]
+    },
+    {
+      "id": 9,
+      "type": "ImageScale",
+      "pos": [
+        850,
+        1000
+      ],
+      "size": [
+        320,
+        130
+      ],
+      "flags": {},
+      "order": 8,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "image",
+          "type": "IMAGE",
+          "link": 3
+        }
+      ],
+      "outputs": [
+        {
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "links": [
+            4
+          ],
+          "slot_index": 0
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "ImageScale"
+      },
+      "widgets_values": [
+        "bilinear",
+        864,
+        480,
+        "center"
+      ]
+    },
+    {
+      "id": 10,
+      "type": "VAEEncode",
+      "pos": [
+        1190,
+        1000
+      ],
+      "size": [
+        220,
+        70
+      ],
+      "flags": {},
+      "order": 9,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "pixels",
+          "type": "IMAGE",
+          "link": 4
+        },
+        {
+          "name": "vae",
+          "type": "VAE",
+          "link": 5
+        }
+      ],
+      "outputs": [
+        {
+          "name": "LATENT",
+          "type": "LATENT",
+          "links": [
+            9
+          ],
+          "slot_index": 0
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "VAEEncode"
+      },
+      "widgets_values": []
+    },
+    {
+      "id": 11,
+      "type": "Kandinsky6ImageToVideoAudio",
+      "pos": [
+        1200,
+        450
+      ],
+      "size": [
+        370,
+        180
+      ],
+      "flags": {},
+      "order": 10,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "positive",
+          "type": "CONDITIONING",
+          "link": 6
+        },
+        {
+          "name": "negative",
+          "type": "CONDITIONING",
+          "link": 7
+        },
+        {
+          "name": "empty_latent",
+          "type": "LATENT",
+          "link": 8
+        },
+        {
+          "name": "reference_latent",
+          "type": "LATENT",
+          "link": 9
+        }
+      ],
+      "outputs": [
+        {
+          "name": "positive",
+          "type": "CONDITIONING",
+          "links": [
+            11
+          ],
+          "slot_index": 0
+        },
+        {
+          "name": "negative",
+          "type": "CONDITIONING",
+          "links": [
+            12
+          ],
+          "slot_index": 1
+        },
+        {
+          "name": "joint_latent",
+          "type": "LATENT",
+          "links": [
+            13
+          ],
+          "slot_index": 2
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "Kandinsky6ImageToVideoAudio"
+      },
+      "widgets_values": []
+    },
+    {
+      "id": 12,
+      "type": "KSampler",
+      "pos": [
+        1580,
+        100
+      ],
+      "size": [
+        320,
+        220
+      ],
+      "flags": {},
+      "order": 11,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "model",
+          "type": "MODEL",
+          "link": 10
+        },
+        {
+          "name": "positive",
+          "type": "CONDITIONING",
+          "link": 11
+        },
+        {
+          "name": "negative",
+          "type": "CONDITIONING",
+          "link": 12
+        },
+        {
+          "name": "latent_image",
+          "type": "LATENT",
+          "link": 13
+        }
+      ],
+      "outputs": [
+        {
+          "name": "LATENT",
+          "type": "LATENT",
+          "links": [
+            14
+          ],
+          "slot_index": 0
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "KSampler"
+      },
+      "widgets_values": [
+        202,
+        "fixed",
+        50,
+        5.0,
+        "euler",
+        "simple",
+        1.0
+      ]
+    },
+    {
+      "id": 13,
+      "type": "Kandinsky6RemoveReferenceLatent",
+      "pos": [
+        1960,
+        100
+      ],
+      "size": [
+        300,
+        70
+      ],
+      "flags": {},
+      "order": 12,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "joint_latent",
+          "type": "LATENT",
+          "link": 14
+        }
+      ],
+      "outputs": [
+        {
+          "name": "joint_latent",
+          "type": "LATENT",
+          "links": [
+            15,
+            18
+          ],
+          "slot_index": 0
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "Kandinsky6RemoveReferenceLatent"
+      },
+      "widgets_values": []
+    },
+    {
+      "id": 14,
+      "type": "VAEDecode",
+      "pos": [
+        2300,
+        50
+      ],
+      "size": [
+        220,
+        70
+      ],
+      "flags": {},
+      "order": 13,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "samples",
+          "type": "LATENT",
+          "link": 15
+        },
+        {
+          "name": "vae",
+          "type": "VAE",
+          "link": 16
+        }
+      ],
+      "outputs": [
+        {
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "links": [
+            19
+          ],
+          "slot_index": 0
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "VAEDecode"
+      },
+      "widgets_values": []
+    },
+    {
+      "id": 15,
+      "type": "Kandinsky6AudioVAEDecode",
+      "pos": [
+        2300,
+        280
+      ],
+      "size": [
+        280,
+        70
+      ],
+      "flags": {},
+      "order": 14,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "audio_vae",
+          "type": "VAE",
+          "link": 17
+        },
+        {
+          "name": "joint_latent",
+          "type": "LATENT",
+          "link": 18
+        }
+      ],
+      "outputs": [
+        {
+          "name": "AUDIO",
+          "type": "AUDIO",
+          "links": [
+            21
+          ],
+          "slot_index": 0
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "Kandinsky6AudioVAEDecode"
+      },
+      "widgets_values": []
+    },
+    {
+      "id": 18,
+      "type": "CreateVideo",
+      "pos": [
+        2660,
+        100
+      ],
+      "size": [
+        280,
+        100
+      ],
+      "flags": {},
+      "order": 15,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "images",
+          "type": "IMAGE",
+          "link": 19
+        },
+        {
+          "name": "audio",
+          "type": "AUDIO",
+          "link": 21
+        },
+        {
+          "name": "fps",
+          "type": "FLOAT",
+          "widget": {
+            "name": "fps"
+          },
+          "link": 20
+        }
+      ],
+      "outputs": [
+        {
+          "name": "VIDEO",
+          "type": "VIDEO",
+          "links": [
+            22
+          ],
+          "slot_index": 0
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "CreateVideo"
+      },
+      "widgets_values": [
+        24.0,
+        "auto",
+        "sRGB",
+        "none"
+      ]
+    },
+    {
+      "id": 19,
+      "type": "SaveVideo",
+      "pos": [
+        3000,
+        100
+      ],
+      "size": [
+        320,
+        130
+      ],
+      "flags": {},
+      "order": 16,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "video",
+          "type": "VIDEO",
+          "link": 22
+        }
+      ],
+      "outputs": [],
+      "properties": {
+        "Node name for S&R": "SaveVideo"
+      },
+      "widgets_values": [
+        "kandinsky6/lite_i2av",
+        "mp4",
+        "h264",
+        "auto"
+      ]
+    },
+    {
+      "id": 30,
+      "type": "MarkdownNote",
+      "pos": [
+        50,
+        1420
+      ],
+      "size": [
+        680,
+        260
+      ],
+      "flags": {},
+      "order": 17,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [],
+      "properties": {},
+      "widgets_values": [
+        "# K6 INT8 Base Image to Video+Audio\nComfyUI 0.39+ with comfy-kitchen 0.2.37+. Place the converted single-file DiT in diffusion_models. The download button supplies independent TE/VAE/audio components. Convert the DiT with tools/convert_int8.py.\n\nStock KSampler: 50 steps, CFG=5, Euler/simple, audio scale=0.5302, flow shift=5.\n\n864\u00d7480, 121 frames at 24 fps. Change the UNET filename to the matching Pro variant to use Pro."
+      ]
+    }
+  ],
+  "links": [
+    [
+      1,
+      2,
+      0,
+      5,
+      0,
+      "CLIP"
+    ],
+    [
+      2,
+      2,
+      0,
+      6,
+      0,
+      "CLIP"
+    ],
+    [
+      3,
+      8,
+      0,
+      9,
+      0,
+      "IMAGE"
+    ],
+    [
+      4,
+      9,
+      0,
+      10,
+      0,
+      "IMAGE"
+    ],
+    [
+      5,
+      3,
+      0,
+      10,
+      1,
+      "VAE"
+    ],
+    [
+      6,
+      5,
+      0,
+      11,
+      0,
+      "CONDITIONING"
+    ],
+    [
+      7,
+      6,
+      0,
+      11,
+      1,
+      "CONDITIONING"
+    ],
+    [
+      8,
+      7,
+      0,
+      11,
+      2,
+      "LATENT"
+    ],
+    [
+      9,
+      10,
+      0,
+      11,
+      3,
+      "LATENT"
+    ],
+    [
+      10,
+      1,
+      0,
+      12,
+      0,
+      "MODEL"
+    ],
+    [
+      11,
+      11,
+      0,
+      12,
+      1,
+      "CONDITIONING"
+    ],
+    [
+      12,
+      11,
+      1,
+      12,
+      2,
+      "CONDITIONING"
+    ],
+    [
+      13,
+      11,
+      2,
+      12,
+      3,
+      "LATENT"
+    ],
+    [
+      14,
+      12,
+      0,
+      13,
+      0,
+      "LATENT"
+    ],
+    [
+      15,
+      13,
+      0,
+      14,
+      0,
+      "LATENT"
+    ],
+    [
+      16,
+      3,
+      0,
+      14,
+      1,
+      "VAE"
+    ],
+    [
+      17,
+      4,
+      0,
+      15,
+      0,
+      "VAE"
+    ],
+    [
+      18,
+      13,
+      0,
+      15,
+      1,
+      "LATENT"
+    ],
+    [
+      19,
+      14,
+      0,
+      18,
+      0,
+      "IMAGE"
+    ],
+    [
+      20,
+      7,
+      1,
+      18,
+      2,
+      "FLOAT"
+    ],
+    [
+      21,
+      15,
+      0,
+      18,
+      1,
+      "AUDIO"
+    ],
+    [
+      22,
+      18,
+      0,
+      19,
+      0,
+      "VIDEO"
+    ]
+  ],
+  "groups": [],
+  "config": {},
+  "extra": {
+    "ds": {
+      "scale": 0.45,
+      "offset": [
+        20,
+        30
+      ]
+    }
+  },
+  "version": 0.4
+}

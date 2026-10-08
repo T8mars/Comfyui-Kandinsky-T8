@@ -1,0 +1,678 @@
+{
+  "last_node_id": 30,
+  "last_link_id": 14,
+  "nodes": [
+    {
+      "id": 1,
+      "type": "UNETLoader",
+      "pos": [
+        50,
+        50
+      ],
+      "size": [
+        340,
+        90
+      ],
+      "flags": {},
+      "order": 0,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "MODEL",
+          "type": "MODEL",
+          "links": [
+            3
+          ],
+          "slot_index": 0
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "UNETLoader"
+      },
+      "widgets_values": [
+        "k6_lite_distill_int8_convrot.safetensors",
+        "default"
+      ]
+    },
+    {
+      "id": 2,
+      "type": "DualCLIPLoader",
+      "pos": [
+        50,
+        280
+      ],
+      "size": [
+        340,
+        130
+      ],
+      "flags": {},
+      "order": 1,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "CLIP",
+          "type": "CLIP",
+          "links": [
+            1,
+            2
+          ],
+          "slot_index": 0
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "DualCLIPLoader",
+        "models": [
+          {
+            "name": "qwen_2.5_vl_7b.safetensors",
+            "directory": "text_encoders",
+            "url": "https://huggingface.co/Comfy-Org/Qwen-Image_ComfyUI/resolve/1f12b17be14c89b026c51a91d67c32f84bb047bc/split_files/text_encoders/qwen_2.5_vl_7b.safetensors"
+          },
+          {
+            "name": "clip_l.safetensors",
+            "directory": "text_encoders",
+            "url": "https://huggingface.co/Comfy-Org/HunyuanVideo_repackaged/resolve/533a43813f01517d9e624f9e824a85bb94094120/split_files/text_encoders/clip_l.safetensors"
+          }
+        ]
+      },
+      "widgets_values": [
+        "qwen_2.5_vl_7b.safetensors",
+        "clip_l.safetensors",
+        "kandinsky5",
+        "default"
+      ]
+    },
+    {
+      "id": 3,
+      "type": "VAELoader",
+      "pos": [
+        50,
+        490
+      ],
+      "size": [
+        340,
+        70
+      ],
+      "flags": {},
+      "order": 2,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "VAE",
+          "type": "VAE",
+          "links": [
+            8
+          ],
+          "slot_index": 0
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "VAELoader",
+        "models": [
+          {
+            "name": "hunyuan_video_vae_bf16.safetensors",
+            "directory": "vae",
+            "url": "https://huggingface.co/Comfy-Org/HunyuanVideo_repackaged/resolve/533a43813f01517d9e624f9e824a85bb94094120/split_files/vae/hunyuan_video_vae_bf16.safetensors"
+          }
+        ]
+      },
+      "widgets_values": [
+        "hunyuan_video_vae_bf16.safetensors"
+      ]
+    },
+    {
+      "id": 4,
+      "type": "Kandinsky6AudioVAELoader",
+      "pos": [
+        50,
+        690
+      ],
+      "size": [
+        360,
+        130
+      ],
+      "flags": {},
+      "order": 3,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "VAE",
+          "type": "VAE",
+          "links": [
+            9
+          ],
+          "slot_index": 0
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "Kandinsky6AudioVAELoader",
+        "kandinsky6_required_files": [
+          {
+            "name": "v1-44.pth",
+            "directory": "audio_vae",
+            "url": "https://huggingface.co/hkchengrex/MMAudio/resolve/eb13a1a98fdbec91753775c57b074ccdfc60587c/ext_weights/v1-44.pth"
+          },
+          {
+            "name": "bigvgan_vocoder/bigvgan_generator.pt",
+            "directory": "audio_vae",
+            "url": "https://huggingface.co/nvidia/bigvgan_v2_44khz_128band_512x/resolve/95a9d1dcb12906c03edd938d77b9333d6ded7dfb/bigvgan_generator.pt"
+          },
+          {
+            "name": "bigvgan_vocoder/config.json",
+            "directory": "audio_vae",
+            "url": "https://huggingface.co/nvidia/bigvgan_v2_44khz_128band_512x/resolve/95a9d1dcb12906c03edd938d77b9333d6ded7dfb/config.json"
+          }
+        ]
+      },
+      "widgets_values": [
+        "v1-44.pth",
+        "bigvgan_vocoder",
+        "44k",
+        0.417,
+        "pretrain / distill"
+      ]
+    },
+    {
+      "id": 5,
+      "type": "Kandinsky6TextEncode",
+      "pos": [
+        470,
+        50
+      ],
+      "size": [
+        390,
+        230
+      ],
+      "flags": {},
+      "order": 4,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "clip",
+          "type": "CLIP",
+          "link": 1
+        }
+      ],
+      "outputs": [
+        {
+          "name": "CONDITIONING",
+          "type": "CONDITIONING",
+          "links": [
+            4
+          ],
+          "slot_index": 0
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "Kandinsky6TextEncode"
+      },
+      "widgets_values": [
+        "Two scarlet macaws with brilliant red, yellow and blue feathers perch on a mossy branch in a lush tropical rainforest. One spreads its wings and flaps them, then both turn their heads and gently preen each other. Sunlight streams through the green canopy. Cinematic nature documentary shot.",
+        "Loud macaw squawks, rustling feathers and leaves, lively rainforest ambience with distant birdsong."
+      ],
+      "title": "Encode expanded video and audio prompt"
+    },
+    {
+      "id": 6,
+      "type": "Kandinsky6TextEncode",
+      "pos": [
+        470,
+        390
+      ],
+      "size": [
+        390,
+        230
+      ],
+      "flags": {},
+      "order": 5,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "clip",
+          "type": "CLIP",
+          "link": 2
+        }
+      ],
+      "outputs": [
+        {
+          "name": "CONDITIONING",
+          "type": "CONDITIONING",
+          "links": [
+            5
+          ],
+          "slot_index": 0
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "Kandinsky6TextEncode"
+      },
+      "widgets_values": [
+        "Static, cartoon, worst quality, low quality, deformed",
+        ""
+      ],
+      "title": "Negative video and audio prompt"
+    },
+    {
+      "id": 7,
+      "type": "Kandinsky6EmptyLatent",
+      "pos": [
+        470,
+        720
+      ],
+      "size": [
+        300,
+        150
+      ],
+      "flags": {},
+      "order": 6,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "joint_latent",
+          "type": "LATENT",
+          "links": [
+            6
+          ],
+          "slot_index": 0
+        },
+        {
+          "name": "fps",
+          "type": "FLOAT",
+          "links": [
+            12
+          ],
+          "slot_index": 1
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "Kandinsky6EmptyLatent"
+      },
+      "widgets_values": [
+        864,
+        480,
+        121,
+        24.0,
+        1
+      ]
+    },
+    {
+      "id": 8,
+      "type": "Kandinsky6Sampler",
+      "pos": [
+        900,
+        100
+      ],
+      "size": [
+        320,
+        220
+      ],
+      "flags": {},
+      "order": 7,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "model",
+          "type": "MODEL",
+          "link": 3
+        },
+        {
+          "name": "positive",
+          "type": "CONDITIONING",
+          "link": 4
+        },
+        {
+          "name": "negative",
+          "type": "CONDITIONING",
+          "link": 5
+        },
+        {
+          "name": "latent_image",
+          "type": "LATENT",
+          "link": 6
+        }
+      ],
+      "outputs": [
+        {
+          "name": "LATENT",
+          "type": "LATENT",
+          "links": [
+            7,
+            10
+          ],
+          "slot_index": 0
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "Kandinsky6Sampler"
+      },
+      "widgets_values": [
+        42,
+        "fixed",
+        10,
+        1.0,
+        "euler",
+        "simple",
+        1.0
+      ]
+    },
+    {
+      "id": 9,
+      "type": "VAEDecode",
+      "pos": [
+        1300,
+        50
+      ],
+      "size": [
+        220,
+        70
+      ],
+      "flags": {},
+      "order": 8,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "samples",
+          "type": "LATENT",
+          "link": 7
+        },
+        {
+          "name": "vae",
+          "type": "VAE",
+          "link": 8
+        }
+      ],
+      "outputs": [
+        {
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "links": [
+            11
+          ],
+          "slot_index": 0
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "VAEDecode"
+      },
+      "widgets_values": []
+    },
+    {
+      "id": 10,
+      "type": "Kandinsky6AudioVAEDecode",
+      "pos": [
+        1300,
+        280
+      ],
+      "size": [
+        260,
+        70
+      ],
+      "flags": {},
+      "order": 9,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "audio_vae",
+          "type": "VAE",
+          "link": 9
+        },
+        {
+          "name": "joint_latent",
+          "type": "LATENT",
+          "link": 10
+        }
+      ],
+      "outputs": [
+        {
+          "name": "AUDIO",
+          "type": "AUDIO",
+          "links": [
+            13
+          ],
+          "slot_index": 0
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "Kandinsky6AudioVAEDecode"
+      },
+      "widgets_values": []
+    },
+    {
+      "id": 11,
+      "type": "CreateVideo",
+      "pos": [
+        1660,
+        100
+      ],
+      "size": [
+        260,
+        90
+      ],
+      "flags": {},
+      "order": 10,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "images",
+          "type": "IMAGE",
+          "link": 11
+        },
+        {
+          "name": "audio",
+          "type": "AUDIO",
+          "link": 13
+        },
+        {
+          "name": "fps",
+          "type": "FLOAT",
+          "widget": {
+            "name": "fps"
+          },
+          "link": 12
+        }
+      ],
+      "outputs": [
+        {
+          "name": "VIDEO",
+          "type": "VIDEO",
+          "links": [
+            14
+          ],
+          "slot_index": 0
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "CreateVideo"
+      },
+      "widgets_values": [
+        24.0,
+        "auto",
+        "sRGB",
+        "none"
+      ]
+    },
+    {
+      "id": 12,
+      "type": "SaveVideo",
+      "pos": [
+        2000,
+        100
+      ],
+      "size": [
+        300,
+        120
+      ],
+      "flags": {},
+      "order": 11,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "video",
+          "type": "VIDEO",
+          "link": 14
+        }
+      ],
+      "outputs": [],
+      "properties": {
+        "Node name for S&R": "SaveVideo"
+      },
+      "widgets_values": [
+        "kandinsky6/lite_distill_t2av",
+        "mp4",
+        "h264",
+        "auto"
+      ]
+    },
+    {
+      "id": 30,
+      "type": "MarkdownNote",
+      "pos": [
+        50,
+        1030
+      ],
+      "size": [
+        680,
+        260
+      ],
+      "flags": {},
+      "order": 12,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [],
+      "properties": {},
+      "widgets_values": [
+        "# K6 INT8 PiFlow Text to Video+Audio\nComfyUI 0.39+ with comfy-kitchen 0.2.37+. Place the converted single-file DiT in diffusion_models. The download button supplies independent TE/VAE/audio components. Convert the DiT with tools/convert_int8.py.\n\nPiFlow: 10 steps, CFG=1, denoise=1, audio scale=0.417. Sampler/scheduler dropdowns are unused for PiFlow.\n\n864\u00d7480, 121 frames at 24 fps. Change the UNET filename to the matching Pro variant to use Pro."
+      ]
+    }
+  ],
+  "links": [
+    [
+      1,
+      2,
+      0,
+      5,
+      0,
+      "CLIP"
+    ],
+    [
+      2,
+      2,
+      0,
+      6,
+      0,
+      "CLIP"
+    ],
+    [
+      3,
+      1,
+      0,
+      8,
+      0,
+      "MODEL"
+    ],
+    [
+      4,
+      5,
+      0,
+      8,
+      1,
+      "CONDITIONING"
+    ],
+    [
+      5,
+      6,
+      0,
+      8,
+      2,
+      "CONDITIONING"
+    ],
+    [
+      6,
+      7,
+      0,
+      8,
+      3,
+      "LATENT"
+    ],
+    [
+      7,
+      8,
+      0,
+      9,
+      0,
+      "LATENT"
+    ],
+    [
+      8,
+      3,
+      0,
+      9,
+      1,
+      "VAE"
+    ],
+    [
+      9,
+      4,
+      0,
+      10,
+      0,
+      "VAE"
+    ],
+    [
+      10,
+      8,
+      0,
+      10,
+      1,
+      "LATENT"
+    ],
+    [
+      11,
+      9,
+      0,
+      11,
+      0,
+      "IMAGE"
+    ],
+    [
+      12,
+      7,
+      1,
+      11,
+      2,
+      "FLOAT"
+    ],
+    [
+      13,
+      10,
+      0,
+      11,
+      1,
+      "AUDIO"
+    ],
+    [
+      14,
+      11,
+      0,
+      12,
+      0,
+      "VIDEO"
+    ]
+  ],
+  "groups": [],
+  "config": {},
+  "extra": {
+    "ds": {
+      "scale": 0.45,
+      "offset": [
+        20,
+        30
+      ]
+    }
+  },
+  "version": 0.4
+}

@@ -1,0 +1,32 @@
+{
+  "checkpoint": "D:\\kandinsky-6\\models\\diffusion_models\\k6_lite_int8_convrot.safetensors",
+  "patcher": "ModelPatcher",
+  "grids": 1,
+  "quantized_layers": 920,
+  "reference": false,
+  "outputs": [
+    {
+      "shape": [
+        1,
+        16,
+        5,
+        32,
+        32
+      ],
+      "finite": true,
+      "rms": 1.4507083892822266
+    },
+    {
+      "shape": [
+        1,
+        31,
+        40
+      ],
+      "finite": true,
+      "rms": 0.918499767780304
+    }
+  ],
+  "elapsed_seconds": 11.375,
+  "peak_allocated": 5022707712,
+  "peak_reserved": 5230297088
+}

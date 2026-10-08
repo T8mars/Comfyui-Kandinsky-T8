@@ -1,0 +1,10 @@
+{
+  "int8_path": "D:\\kandinsky-6\\.research\\ComfyUI\\output\\kandinsky6\\lite_distill_t2av_00001_.mp4",
+  "original_path": "D:\\kandinsky-6\\.research\\ComfyUI\\output\\kandinsky6\\lite_distill_original_t2av_00001_.mp4",
+  "frame_count": 121,
+  "same_prompt_and_seed": true,
+  "rgb_mse": 0.007496251762212231,
+  "rgb_psnr_db": 21.251558360605895,
+  "meaning": "Full-output difference only, not a perceptual quality score.",
+  "graph_equivalence": "All nodes, inputs and links identical except diffusion filename and save prefix."
+}
