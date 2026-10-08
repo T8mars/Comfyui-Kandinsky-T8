@@ -347,7 +347,7 @@
         "Node name for S&R": "LoadImage"
       },
       "widgets_values": [
-        "kandinsky6/kandinsky6_i2va_portrait.png",
+        "kandinsky6_i2va_portrait.png",
         "image"
       ]
     },

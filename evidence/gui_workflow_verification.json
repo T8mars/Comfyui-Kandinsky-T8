@@ -1,0 +1,189 @@
+{
+  "node_version": "0.1.4",
+  "gui_format": "ComfyUI workflow v0.4 with nodes/links/widgets_values",
+  "scope": "Parameters and links from six completed full INT8 runs; image path is changed to the same SHA-verified portrait in input root so modern GUI preserves its selection.",
+  "workflows": [
+    {
+      "file": "K6 INT8 Lite Text to Video+Audio.json",
+      "sha256": "6028f63fd869224c850493b46242835cf983b799104af69a16e93e7f4423d8b3",
+      "model": "k6_lite_int8_convrot.safetensors",
+      "prompt_id": "0bf98326-f913-48e5-9db9-a2ce066af88b",
+      "execution_status": "execution_success",
+      "execution_seconds": 1057.675,
+      "gui_links_match_executed_graph": true,
+      "linked_edges": 14,
+      "existing_video_bytes": 2737611,
+      "video": {
+        "width": 864,
+        "height": 480,
+        "fps": 24.0,
+        "decoded_frames": 121,
+        "video_codec": "h264",
+        "audio_codec": "aac",
+        "audio_sample_rate": 44100,
+        "audio_finite": true
+      },
+      "actual_gui_import_and_api_export_verified": true,
+      "actual_gui_api_export_sha256": "5320ee9bdad7daa1efa12ff2072b248c3f6655ff18c3bb7ba0e93c46ee2bcfe8"
+    },
+    {
+      "file": "K6 INT8 Lite Image to Video+Audio.json",
+      "sha256": "5b5216cfa162368e4c3dedaf6736164498411a97547d81a637280604bb09b467",
+      "model": "k6_lite_int8_convrot.safetensors",
+      "prompt_id": "77708a03-d3bc-4375-ae1e-efcea7dd29b3",
+      "execution_status": "execution_success",
+      "execution_seconds": 1075.135,
+      "gui_links_match_executed_graph": true,
+      "linked_edges": 22,
+      "existing_video_bytes": 1064118,
+      "video": {
+        "width": 864,
+        "height": 480,
+        "fps": 24.0,
+        "decoded_frames": 121,
+        "video_codec": "h264",
+        "audio_codec": "aac",
+        "audio_sample_rate": 44100,
+        "audio_finite": true
+      },
+      "actual_gui_import_and_api_export_verified": true,
+      "actual_gui_api_export_sha256": "3cb7fb584decf406c62890deb606c73382dd029be51d282462d015bc4a0ed31d"
+    },
+    {
+      "file": "K6 INT8 Lite distill Text to Video+Audio.json",
+      "sha256": "8b651391f8b772ab5b5e650c887824cf6ead39af381ed19ae60c679d9b1d3bc6",
+      "model": "k6_lite_distill_int8_convrot.safetensors",
+      "prompt_id": "fe355511-96c5-40f5-a9be-1f11394c65af",
+      "execution_status": "execution_success",
+      "execution_seconds": 163.122,
+      "gui_links_match_executed_graph": true,
+      "linked_edges": 14,
+      "existing_video_bytes": 2141904,
+      "video": {
+        "width": 864,
+        "height": 480,
+        "fps": 24.0,
+        "decoded_frames": 121,
+        "video_codec": "h264",
+        "audio_codec": "aac",
+        "audio_sample_rate": 44100,
+        "audio_finite": true
+      },
+      "actual_gui_import_and_api_export_verified": true,
+      "actual_gui_api_export_sha256": "9c2176f74055f6e860cfb1e5071fa54ed10e8308430bdf4fb3a99b2685efcefc"
+    },
+    {
+      "file": "K6 INT8 Lite distill Image to Video+Audio.json",
+      "sha256": "40a00ff045d7975d05973eb88a6b4e1c6fbbe463e53afd521b54441417429cff",
+      "model": "k6_lite_distill_int8_convrot.safetensors",
+      "prompt_id": "4436e63c-fe80-486b-97fc-43dd0302690f",
+      "execution_status": "execution_success",
+      "execution_seconds": 136.394,
+      "gui_links_match_executed_graph": true,
+      "linked_edges": 22,
+      "existing_video_bytes": 1161975,
+      "video": {
+        "width": 864,
+        "height": 480,
+        "fps": 24.0,
+        "decoded_frames": 121,
+        "video_codec": "h264",
+        "audio_codec": "aac",
+        "audio_sample_rate": 44100,
+        "audio_finite": true
+      },
+      "actual_gui_import_and_api_export_verified": true,
+      "actual_gui_api_export_sha256": "7853d09aba1f18617692fb7809428bc97c8b9561ed57eb49bbab0f6a1df3c2ef"
+    },
+    {
+      "file": "K6 INT8 Pro distill Text to Video+Audio.json",
+      "sha256": "39b1237da0e27c64a0bd6d627944994e181fd2368c0b756dc875584c879a75b4",
+      "model": "k6_pro_distill_int8_convrot.safetensors",
+      "prompt_id": "ccc64813-67e7-4637-bdcb-f8731e81126c",
+      "execution_status": "execution_success",
+      "execution_seconds": 745.431,
+      "gui_links_match_executed_graph": true,
+      "linked_edges": 14,
+      "existing_video_bytes": 1797770,
+      "video": {
+        "width": 864,
+        "height": 480,
+        "fps": 24.0,
+        "decoded_frames": 121,
+        "video_codec": "h264",
+        "audio_codec": "aac",
+        "audio_sample_rate": 44100,
+        "audio_finite": true
+      },
+      "actual_gui_import_and_api_export_verified": true,
+      "actual_gui_api_export_sha256": "8c01db1ea2cacdeea35889ef3968c71f1c83ea7523cd4fcccf5a2bfe06e0f2d9"
+    },
+    {
+      "file": "K6 INT8 Pro distill Image to Video+Audio.json",
+      "sha256": "d774cf1df6489b60763837c1f0e2067df87592da01deb9c4a395a14d68eaf3aa",
+      "model": "k6_pro_distill_int8_convrot.safetensors",
+      "prompt_id": "817d8dfd-8db1-4482-91db-f430b96245f7",
+      "execution_status": "execution_success",
+      "execution_seconds": 945.404,
+      "gui_links_match_executed_graph": true,
+      "linked_edges": 22,
+      "existing_video_bytes": 1144130,
+      "video": {
+        "width": 864,
+        "height": 480,
+        "fps": 24.0,
+        "decoded_frames": 121,
+        "video_codec": "h264",
+        "audio_codec": "aac",
+        "audio_sample_rate": 44100,
+        "audio_finite": true
+      },
+      "actual_gui_import_and_api_export_verified": true,
+      "actual_gui_api_export_sha256": "2dac9a6e02f2e284136b39a295fa508ac5ba965f669d8c7f620e8d971073c9ea"
+    }
+  ],
+  "gui_frontend_version": "1.55.14",
+  "actual_gui_roundtrips": 6,
+  "fresh_gui_full_run": {
+    "prompt_id": "44317a6f-06f1-4d90-a763-9adaa2635751",
+    "source": "Actual ComfyUI GUI Run button",
+    "workflow": "K6 INT8 Lite distill Image to Video+Audio.json",
+    "execution_status": "execution_success",
+    "execution_seconds": 157.632,
+    "media": {
+      "width": 864,
+      "height": 480,
+      "fps": 24.0,
+      "video_duration": 5.041666666666667,
+      "video_codec": "h264",
+      "audio_sample_rate": 44100,
+      "audio_channels": 1,
+      "audio_duration": 5.0416780045351475,
+      "audio_codec": "aac",
+      "decoded_frames": 121,
+      "middle_frame_mean": 0.4395890533924103,
+      "middle_frame_std": 0.20366327464580536,
+      "decoded_audio_values": 222338,
+      "audio_finite": true,
+      "audio_rms": 0.012533729895949364,
+      "audio_peak": 0.14016547799110413,
+      "audio_near_saturation_fraction": 0.0
+    },
+    "receipt": "evidence/lite_distill_i2av_gui_full.json",
+    "screenshot": "evidence/comfyui-gui-run-complete.jpg"
+  },
+  "tests": {
+    "python_passed": 109,
+    "skipped": 0,
+    "elapsed_seconds": 7.84,
+    "frontend_workflow_buttons": "four passed; idempotent binding and stream failure checks passed"
+  },
+  "image_path_fix": "Install portrait in input root and preserve existing user files; stock LoadImage lists root files for modern frontend media checks. Refresh node definitions after an upgrade if a stale list remains.",
+  "workflow_pack": {
+    "filename": "Kandinsky-T8-0.1.4-GUI-Workflows.zip",
+    "bytes": 2017751,
+    "sha256": "29cb4fb22facc047979332f361e845afa43af21e9f0c88331e6ea262673dccae",
+    "crc_passed": true,
+    "files": 13
+  }
+}

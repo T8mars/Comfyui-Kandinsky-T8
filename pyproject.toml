@@ -1,7 +1,7 @@
 [project]
 name = "kandinsky-t8"
 description = "Native Kandinsky 6 video/audio nodes and single-file INT8 ConvRot conversion"
-version = "0.1.3"
+version = "0.1.4"
 license = { file = "LICENSE" }
 requires-python = ">=3.10"
 classifiers = ["Environment :: GPU :: NVIDIA CUDA"]

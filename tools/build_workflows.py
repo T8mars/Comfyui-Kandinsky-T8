@@ -42,7 +42,7 @@ def make_graph(image, distilled, family="lite"):
     sampler, video_decode, audio_decode, video_create, video_save = (12, 14, 15, 18, 19) if image else (8, 9, 10, 11, 12)
     positive, negative, latent = ["5", 0], ["6", 0], ["7", 0]
     if image:
-        add(8, "LoadImage", image="kandinsky6/kandinsky6_i2va_portrait.png")
+        add(8, "LoadImage", image="kandinsky6_i2va_portrait.png")
         add(9, "ImageScale", image=["8", 0], upscale_method="bilinear", width=864, height=480, crop="center")
         add(10, "VAEEncode", pixels=["9", 0], vae=["3", 0])
         add(11, "Kandinsky6ImageToVideoAudio", positive=positive, negative=negative, empty_latent=latent, reference_latent=["10", 0])

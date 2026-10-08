@@ -69,6 +69,8 @@ python tools/convert_int8.py "$modelsRoot\sources\pro-distill.safetensors" "$mod
 
 `example_workflows` 包含四个 GUI 工作流；对应 API 图在 `example_workflows/api`。旧版包含 SR/Beautifier 的官方示例保留在 `upstream_examples`，基础流程没有这些依赖。
 
+Release 提供三模型各两份的 [GUI 工作流压缩包](https://github.com/T8mars/Comfyui-Kandinsky-T8/releases/download/v0.1.4/Kandinsky-T8-0.1.4-GUI-Workflows.zip)。解压后拖入根目录的 JSON。图生示例图直接位于 `ComfyUI/input/kandinsky6_i2va_portrait.png`，以便官方 LoadImage 枚举和新版前端导入时保留选择。
+
 | 模型 | 采样器 | steps / CFG / denoise | 音频 scale |
 |---|---|---|---|
 | Lite | 官方 KSampler，Euler / simple | 50 / 5 / 1 | 0.5302 |

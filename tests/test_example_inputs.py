@@ -30,7 +30,7 @@ def test_example_install_preserves_user_file(tmp_path, monkeypatch):
     source.mkdir()
     (source / "example.png").write_bytes(b"example")
     monkeypatch.setattr(module, "EXAMPLE_INPUTS", source)
-    target = tmp_path / "input/kandinsky6/example.png"
+    target = tmp_path / "input/example.png"
     target.parent.mkdir(parents=True)
     target.write_bytes(b"user content")
     assert module.install_example_inputs(tmp_path / "input") == ()
