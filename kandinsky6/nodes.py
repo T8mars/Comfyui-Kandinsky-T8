@@ -7,6 +7,7 @@ import torch
 
 import comfy.model_management as mm
 import comfy.nested_tensor
+import comfy.patcher_extension
 import folder_paths
 import node_helpers
 import nodes as comfy_nodes
@@ -487,6 +488,12 @@ class Kandinsky6Sampler(comfy_nodes.KSampler):
         return (sample_piflow(model, latent_image, positive, seed, steps),)
 
 
+def _reset_magcache(model):
+    state = model.model_options.get("transformer_options", {}).get("k6_magcache")
+    if isinstance(state, K6MagCacheState):
+        state.reset_generation()
+
+
 class Kandinsky6MagCache:
     """Attach the canonical K6 Pro MagCache policy to a Comfy MODEL clone."""
 
@@ -568,6 +575,10 @@ class Kandinsky6MagCache:
             retention_ratio=float(retention_ratio),
             mag_ratios=MAGCACHE_DEFAULTS["mag_ratios"],
         )
+        for event in (comfy.patcher_extension.CallbacksMP.ON_PRE_RUN,
+                      comfy.patcher_extension.CallbacksMP.ON_CLEANUP):
+            cached_model.remove_callbacks_with_key(event, "kandinsky6.magcache")
+            cached_model.add_callback_with_key(event, "kandinsky6.magcache", _reset_magcache)
         return (cached_model,)
 
 

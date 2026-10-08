@@ -119,6 +119,17 @@ class K6MagCacheState:
         self._computed_model_calls = 0
         self._skipped_model_calls = 0
 
+    def reset_generation(self) -> None:
+        """Discard residuals on native pre-run/cleanup, including interrupted runs."""
+        self._profile = None
+        self._shape = None
+        self._lanes = {}
+        self._seen_lanes = set()
+        self._last_timestep = None
+        self._finished = False
+        self._computed_forwards = self._skipped_forwards = 0
+        self._computed_model_calls = self._skipped_model_calls = 0
+
     @staticmethod
     def _normalise_lanes(cond_or_uncond: object, batch: int) -> tuple[int, ...]:
         if isinstance(cond_or_uncond, (list, tuple)) and cond_or_uncond:

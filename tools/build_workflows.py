@@ -106,9 +106,13 @@ def make_gui(graph, image, distilled, title):
             port["link"] = link_id
             source["outputs"][slot]["links"].append(link_id)
             links.append([link_id, source["id"], slot, target["id"], index, port["type"]])
+    sources = {(item["repo"], item["revision"], item["filename"]): item
+               for item in json.loads((ROOT / "MODEL_SOURCES.json").read_text(encoding="utf-8"))}
     for key, field, name, directory, repo, revision, filename in COMPONENTS:
+        source = sources[(repo, revision, filename)]
         by_id[key]["properties"].setdefault(field, []).append({"name": name, "directory": directory,
-            "url": f"https://huggingface.co/{repo}/resolve/{revision}/{filename}"})
+            "url": f"https://huggingface.co/{repo}/resolve/{revision}/{filename}",
+            "size": source["size"], "sha256": source["actual_sha256"]})
     # Compact the original positions into a left-to-right native pipeline.
     positions = {"1":(50,50),"2":(50,280),"3":(50,490),"4":(50,690),"5":(470,50),"6":(470,390),"7":(470,720)}
     if image:
@@ -120,7 +124,7 @@ def make_gui(graph, image, distilled, title):
         node["pos"] = list(positions[key])
     note_id = 30
     nodes.append({"id":note_id,"type":"MarkdownNote","pos":[50,1420 if image else 1030],"size":[680,260],"flags":{},"order":len(nodes),"mode":0,
-                  "inputs":[],"outputs":[],"properties":{},"widgets_values":[
+                  "inputs":[],"outputs":[],"properties":{"kandinsky6_download_package":"kandinsky6"},"widgets_values":[
                       f"# {title}\nComfyUI 0.39+ with comfy-kitchen 0.2.37+. Place the converted single-file DiT in diffusion_models. "
                       "The download button supplies independent TE/VAE/audio components. Convert the DiT with tools/convert_int8.py.\n\n"
                       + ("PiFlow: 10 steps, CFG=1, denoise=1, audio scale=0.417. Sampler/scheduler dropdowns are unused for PiFlow."

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import asyncio
 import errno
+import hashlib
 import json
 import logging
 import re
@@ -16,9 +17,10 @@ from huggingface_hub.errors import HfHubHTTPError
 
 _MODEL_DIRS = {"diffusion_models", "text_encoders", "vae", "audio_vae"}
 _MIN_HF_URL_PARTS = 5  # owner/repo/resolve/main/file
+_verified_files = {}
 
 
-def model_plan(workflows: Path) -> list[dict[str, str]]:
+def model_plan(workflows: Path) -> list[dict]:
     entries = {}
     for workflow in sorted(workflows.glob("*.json")):
         graph = json.loads(workflow.read_text(encoding="utf-8"))
@@ -33,6 +35,9 @@ def model_plan(workflows: Path) -> list[dict[str, str]]:
                         or name.is_absolute()
                         or ".." in name.parts
                         or "\\" in item["name"]
+                        or type(item.get("size")) is not int
+                        or item["size"] <= 0
+                        or not re.fullmatch(r"[a-f0-9]{64}", item.get("sha256", ""))
                         or url.scheme != "https"
                         or url.netloc != "huggingface.co"
                         or url.query
@@ -57,13 +62,36 @@ def existing_model(entry, models_root, extra_roots):
     roots = [models_root / entry["directory"], *extra_roots.get(entry["directory"], [])]
     for root in roots:
         candidate = Path(root) / entry["name"]
-        if candidate.is_file() and candidate.stat().st_size > 0:
+        if candidate.is_file() and candidate.stat().st_size == entry["size"]:
             return candidate
     return None
 
 
+def verified_model(path, entry):
+    """Hash on explicit download only, caching against the file's identity/stat."""
+    stat = path.stat()
+    if stat.st_size != entry["size"]:
+        return False
+    key = str(path.resolve())
+    fingerprint = (stat.st_dev, stat.st_ino, stat.st_size, stat.st_mtime_ns, stat.st_ctime_ns)
+    cached = _verified_files.get(key)
+    if cached is not None and cached[0] == fingerprint:
+        return cached[1] == entry["sha256"]
+    digest = hashlib.sha256()
+    with path.open("rb") as stream:
+        for block in iter(lambda: stream.read(8 << 20), b""):
+            digest.update(block)
+    after = path.stat()
+    if fingerprint != (after.st_dev, after.st_ino, after.st_size, after.st_mtime_ns, after.st_ctime_ns):
+        return False
+    actual = digest.hexdigest()
+    _verified_files[key] = (fingerprint, actual)
+    return actual == entry["sha256"]
+
+
 def download_model(entry, models_root, extra_roots):
-    if existing_model(entry, models_root, extra_roots) is not None:
+    existing = existing_model(entry, models_root, extra_roots)
+    if existing is not None and verified_model(existing, entry):
         return "reused"
     category = models_root / entry["directory"]
     destination = category / entry["name"]
@@ -72,15 +100,20 @@ def download_model(entry, models_root, extra_roots):
     destination.parent.mkdir(parents=True, exist_ok=True)
     # Download on the destination filesystem: resumable partials, then an atomic
     # move into the exact Comfy filename, without a second full copy of the weights.
-    downloaded = Path(
-        hf_hub_download(
+    for attempt in range(2):
+        downloaded = Path(hf_hub_download(
             repo_id=entry["repo_id"],
             filename=entry["filename"],
             revision=entry["revision"],
             local_dir=destination.parent / ".kandinsky6-downloads" / entry["repo_id"].replace("/", "--"),
-        )
-    )
-    if existing_model(entry, models_root, extra_roots) is not None:
+            force_download=bool(attempt),
+        ))
+        if verified_model(downloaded, entry):
+            break
+    else:
+        raise ValueError(f"Downloaded file failed size/SHA-256 verification: {entry['name']}")
+    existing = existing_model(entry, models_root, extra_roots)
+    if existing is not None and verified_model(existing, entry):
         return "reused"
     downloaded.replace(destination)
     return "downloaded"

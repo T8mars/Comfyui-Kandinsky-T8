@@ -42,13 +42,13 @@ ComfyUI/models/
   audio_vae/bigvgan_vocoder/bigvgan_generator.pt
 ```
 
-The workflow's **Download models** button downloads these shared components from their pinned upstream repositories and reuses existing files. DiT downloads are separate. `extra_model_paths.yaml` is supported.
+The workflow's **Download models** button downloads these shared components from their pinned upstream repositories and verifies their size and SHA-256 before installation or reuse. DiT downloads are separate. `extra_model_paths.yaml` is supported.
 
 ## Run
 
 Import a [Base or PiFlow workflow](example_workflows), choose the matching model in **UNETLoader** and keep `weight_dtype=default`. Use Base for Lite; PiFlow for either distilled model. Choose Text or Image for the input mode.
 
-Default output: **864×480, 121 frames, 24 fps**, MP4 with audio. Width and height must be multiples of 16; frame count must be `4*n+1`. PiFlow requires CFG=1 and denoise=1.
+Default output: **864×480, 121 frames, 24 fps**, MP4 with audio. Width and height must be multiples of 16; frame count must be `4*n+1`. PiFlow requires CFG=1, denoise=1 and one global, full-range conditioning.
 
 Uses ComfyUI's native **UNETLoader / ModelPatcher**, **DualCLIPLoader (`kandinsky5`)**, **VAELoader**, latent/conditioning interfaces and memory offloading. ComfyUI core files are not modified. Lite uses stock KSampler; distilled models use the dedicated Kandinsky6Sampler for PiFlow.
 

@@ -37,3 +37,14 @@
 节点包 `evidence/summary.json` 汇总七条完整运行；`evidence/full_runs` 为 ComfyUI 实际回执，`evidence/media` 为媒体回读结果，`evidence/qa` 为代表帧，`evidence/conversion` 为三个转换 manifest。独立组件与源模型的仓库、固定 revision、字节数和 SHA-256 位于 `MODEL_SOURCES.json`。完整日志、视频和原始权重保留在开发工作区 `logs`、`.research/ComfyUI/output`、`models`。
 
 本次发布与验证覆盖 Lite、Lite 蒸馏版和 Pro 蒸馏版。普通 Pro 未完成下载，按交付范围不纳入发布，也未进行运行验证。未对其他硬件、所有题材、外部 ControlNet 或 PiFlow 的任意 guider/hook 作兼容保证。
+
+2026-10-08，`0.1.1` 完成另一组实际 20 轮子 Agent 交叉检查，逐轮结论保存在 [evidence/crosscheck_20.json](evidence/crosscheck_20.json)。修复 10 类问题：工作流下载按钮、损坏组件复用、错误哈希 partial 的重试、移除队列后的等待、完整 AV checkpoint 结构检查、临时路径覆盖源文件、PiFlow 条件元数据、异常清理、AV 交叉注意力选项传递，以及中断后的 MagCache 生命周期。
+
+新增针对性回归与原有转换测试合计 **43 项通过**；前端按钮绑定及 NDJSON 断流测试通过。真实原生检测器验证三份源模型与三份 INT8 模型均兼容；Lite KSampler 与 Lite 蒸馏 PiFlow 另外重跑 `256×256 / 17 帧 / 2 steps` I2AV，两路输出均为有限值，参考最大误差分别为 `9.54e-7 / 2.38e-7`。可选 MagCache 生命周期使用真实 CPU ModelPatcher 验证；未为此下载普通 Pro。本次没有重新量化或修改三份已发布权重，也未重复此前六条默认尺寸完整媒体运行。
+
+回归命令（使用已安装依赖的 Python；CUDA 检查需要实际 CUDA 环境）：
+
+```bash
+python -m pytest --import-mode=importlib --confcutdir=tests tests -q
+node tests/test_downloads.mjs
+```

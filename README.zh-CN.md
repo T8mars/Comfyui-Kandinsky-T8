@@ -42,13 +42,13 @@ ComfyUI/models/
   audio_vae/bigvgan_vocoder/bigvgan_generator.pt
 ```
 
-工作流中的 **Download models** 按钮从固定版本的上游仓库下载这些共享组件，并复用已有文件；DiT 单独下载。支持 `extra_model_paths.yaml`。
+工作流中的 **Download models** 按钮从固定版本的上游仓库下载这些共享组件，安装或复用前验证大小与 SHA-256；DiT 单独下载。支持 `extra_model_paths.yaml`。
 
 ## 使用
 
 导入 [Base 或 PiFlow 工作流](example_workflows)，在 **UNETLoader** 中选择对应模型，保持 `weight_dtype=default`。Lite 使用 Base；两个蒸馏版使用 PiFlow。按输入方式选择 Text 或 Image 工作流。
 
-默认输出 **864×480、121 帧、24 fps**，生成带音轨的 MP4。宽高需为 16 的倍数，帧数需为 `4*n+1`；PiFlow 使用 CFG=1、denoise=1。
+默认输出 **864×480、121 帧、24 fps**，生成带音轨的 MP4。宽高需为 16 的倍数，帧数需为 `4*n+1`；PiFlow 使用 CFG=1、denoise=1 和一条覆盖全程的全局条件。
 
 接入官方 **UNETLoader / ModelPatcher**、**DualCLIPLoader（`kandinsky5`）**、**VAELoader**、latent/conditioning 接口及显存卸载机制，无需修改 ComfyUI 核心。Lite 使用官方 KSampler；蒸馏版通过 Kandinsky6Sampler 执行专用 PiFlow 采样。
 

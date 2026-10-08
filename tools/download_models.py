@@ -68,7 +68,13 @@ def download(item, root):
         for attempt in range(8):
             offset = partial.stat().st_size if partial.exists() else 0
             if offset == item["size"]:
-                break
+                if not item["sha256"] or digest(partial) == item["sha256"]:
+                    break
+                # This file belongs to the downloader. Restart a complete but
+                # corrupt partial without touching an existing installed model.
+                with partial.open("wb"):
+                    pass
+                offset = 0
             if offset > item["size"]:
                 raise ValueError(f"Partial file exceeds expected size: {partial}")
             if shutil.disk_usage(root).free < item["size"] - offset + (2 << 30):
@@ -99,6 +105,8 @@ def download(item, root):
                 time.sleep(min(2 ** attempt, 30))
         actual = digest(partial)
         if partial.stat().st_size != item["size"] or (item["sha256"] and actual != item["sha256"]):
+            with partial.open("wb"):
+                pass
             raise ValueError(f"Downloaded file failed verification: {partial}")
         os.replace(partial, destination)
         print(f"VERIFIED {item['destination']}", flush=True)

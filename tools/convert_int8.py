@@ -9,6 +9,7 @@ import re
 import shutil
 import struct
 import sys
+import tempfile
 import time
 from collections import Counter
 from pathlib import Path
@@ -18,7 +19,7 @@ from comfy_kitchen.tensor import TensorWiseINT8Layout
 from safetensors import safe_open
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from kandinsky6.checkpoint import native_key
+from kandinsky6.checkpoint import native_key, validate_released_shapes
 
 RECIPE = "k6-attention-ffn-convrot-v1"
 LINEAR = re.compile(
@@ -66,12 +67,15 @@ def make_plan(source, excluded=()):
             shape, dtype = list(view.get_shape()), view.get_dtype()
             if dtype not in DTYPE_BYTES:
                 raise ValueError(f"Unsupported source dtype {dtype}: {source_key}")
+            if dtype not in {"F32", "F16", "BF16"}:
+                raise ValueError(f"Expected floating-point K6 parameter: {source_key}")
             group = None if key in excluded else group_size(key, shape)
             if group and dtype not in {"F32", "F16", "BF16"}:
                 raise ValueError(f"Expected floating-point source weight: {source_key}")
             tensors.append({"source": source_key, "key": key, "shape": shape,
                             "dtype": dtype, "group": group})
         shapes = {item["key"]: item["shape"] for item in tensors}
+        validate_released_shapes(shapes)
         required = ("visual_embeddings.in_layer.weight", "audio_embeddings.in_layer.weight", "out_layer.out_layer.weight")
         if not all(key in shapes for key in required):
             raise ValueError("Not a complete Kandinsky 6 joint AV DiT")
@@ -177,6 +181,8 @@ def tensor_bytes(tensor):
 
 
 def convert(source, destination, rows=256, device="cuda", excluded=(), overwrite=False):
+    if type(rows) is not int or rows < 1:
+        raise ValueError("rows must be a positive integer")
     source, destination = Path(source).resolve(), Path(destination).resolve()
     if source == destination:
         raise ValueError("Destination must differ from source")
@@ -202,69 +208,70 @@ def convert(source, destination, rows=256, device="cuda", excluded=(), overwrite
     destination.parent.mkdir(parents=True, exist_ok=True)
     if shutil.disk_usage(destination.parent).free < data_start + payload_size + (1 << 30):
         raise OSError("Not enough free space for the converted checkpoint")
-    temporary = destination.with_suffix(destination.suffix + ".tmp")
-    passthrough, metrics = {}, []
-    started = time.monotonic()
-    with temporary.open("w+b") as output, safe_open(str(source), framework="pt", device="cpu") as checkpoint:
-        output.write(struct.pack("<Q", len(header)))
-        output.write(header)
-        output.truncate(data_start + payload_size)
-        for key, encoded in configs.items():
-            output.seek(data_start + schema[key]["data_offsets"][0])
-            output.write(encoded)
-        for index, item in enumerate(plan):
-            key, shape, group = item["key"], item["shape"], item["group"]
-            prefix = key.removesuffix("weight")
-            view = checkpoint.get_slice(item["source"])
-            tensor_hash = hashlib.sha256()
-            if not shape:
-                data = tensor_bytes(checkpoint.get_tensor(item["source"]))
+    with tempfile.TemporaryDirectory(prefix=destination.name + ".", dir=destination.parent) as workspace:
+        temporary = Path(workspace) / "checkpoint.tmp"
+        passthrough, metrics = {}, []
+        started = time.monotonic()
+        with temporary.open("w+b") as output, safe_open(str(source), framework="pt", device="cpu") as checkpoint:
+            output.write(struct.pack("<Q", len(header)))
+            output.write(header)
+            output.truncate(data_start + payload_size)
+            for key, encoded in configs.items():
                 output.seek(data_start + schema[key]["data_offsets"][0])
-                output.write(data)
-                passthrough[key] = hashlib.sha256(data).hexdigest()
-                continue
-            row_elements = math.prod(shape[1:])
-            step = rows if group else max(1, (16 << 20) // max(1, row_elements * DTYPE_BYTES[item["dtype"]]))
-            for start in range(0, shape[0], step):
-                stop = min(start + step, shape[0])
-                block = view[start:stop]
-                if group:
-                    weight = block.to(device=device, dtype=torch.float32)
-                    if not torch.isfinite(weight).all():
-                        raise ValueError(f"Non-finite source weight: {key}")
-                    qdata, params = TensorWiseINT8Layout.quantize(
-                        weight, per_channel=True, convrot=True, convrot_groupsize=group, stochastic_rounding=0,
-                    )
-                    output.seek(data_start + schema[prefix + "weight_scale"]["data_offsets"][0] + start * 4)
-                    output.write(tensor_bytes(params.scale))
-                    if start == 0:
-                        sample_count = min(32, stop)
-                        sample_params = TensorWiseINT8Layout.Params(
-                            scale=params.scale[:sample_count], orig_dtype=torch.float32,
-                            orig_shape=(sample_count, shape[1]), convrot=True, convrot_groupsize=group,
+                output.write(encoded)
+            for index, item in enumerate(plan):
+                key, shape, group = item["key"], item["shape"], item["group"]
+                prefix = key.removesuffix("weight")
+                view = checkpoint.get_slice(item["source"])
+                tensor_hash = hashlib.sha256()
+                if not shape:
+                    data = tensor_bytes(checkpoint.get_tensor(item["source"]))
+                    output.seek(data_start + schema[key]["data_offsets"][0])
+                    output.write(data)
+                    passthrough[key] = hashlib.sha256(data).hexdigest()
+                    continue
+                row_elements = math.prod(shape[1:])
+                step = rows if group else max(1, (16 << 20) // max(1, row_elements * DTYPE_BYTES[item["dtype"]]))
+                for start in range(0, shape[0], step):
+                    stop = min(start + step, shape[0])
+                    block = view[start:stop]
+                    if group:
+                        weight = block.to(device=device, dtype=torch.float32)
+                        if not torch.isfinite(weight).all():
+                            raise ValueError(f"Non-finite source weight: {key}")
+                        qdata, params = TensorWiseINT8Layout.quantize(
+                            weight, per_channel=True, convrot=True, convrot_groupsize=group, stochastic_rounding=0,
                         )
-                        reconstructed = TensorWiseINT8Layout.dequantize(qdata[:sample_count], sample_params)
-                        reference = weight[:sample_count]
-                        relative = ((reconstructed - reference).norm() / reference.norm().clamp_min(1e-30)).item()
-                        metrics.append({"layer": key, "group": group, "sample_relative_l2": relative})
-                        del reconstructed, reference, sample_params
-                    data = tensor_bytes(qdata)
-                    del weight, qdata, params
-                else:
-                    data = tensor_bytes(block)
-                    tensor_hash.update(data)
-                output.seek(data_start + schema[key]["data_offsets"][0] + start * row_elements * DTYPE_BYTES[schema[key]["dtype"]])
-                output.write(data)
-                del block, data
-            if not group:
-                passthrough[key] = tensor_hash.hexdigest()
-            if index % 40 == 0:
-                print(f"CONVERT {index + 1}/{len(plan)} {key} elapsed={time.monotonic() - started:.1f}s", flush=True)
-        output.flush()
-        os.fsync(output.fileno())
-    verify(str(temporary), plan, schema, passthrough)
-    output_sha = file_hash(temporary)
-    os.replace(temporary, destination)
+                        output.seek(data_start + schema[prefix + "weight_scale"]["data_offsets"][0] + start * 4)
+                        output.write(tensor_bytes(params.scale))
+                        if start == 0:
+                            sample_count = min(32, stop)
+                            sample_params = TensorWiseINT8Layout.Params(
+                                scale=params.scale[:sample_count], orig_dtype=torch.float32,
+                                orig_shape=(sample_count, shape[1]), convrot=True, convrot_groupsize=group,
+                            )
+                            reconstructed = TensorWiseINT8Layout.dequantize(qdata[:sample_count], sample_params)
+                            reference = weight[:sample_count]
+                            relative = ((reconstructed - reference).norm() / reference.norm().clamp_min(1e-30)).item()
+                            metrics.append({"layer": key, "group": group, "sample_relative_l2": relative})
+                            del reconstructed, reference, sample_params
+                        data = tensor_bytes(qdata)
+                        del weight, qdata, params
+                    else:
+                        data = tensor_bytes(block)
+                        tensor_hash.update(data)
+                    output.seek(data_start + schema[key]["data_offsets"][0] + start * row_elements * DTYPE_BYTES[schema[key]["dtype"]])
+                    output.write(data)
+                    del block, data
+                if not group:
+                    passthrough[key] = tensor_hash.hexdigest()
+                if index % 40 == 0:
+                    print(f"CONVERT {index + 1}/{len(plan)} {key} elapsed={time.monotonic() - started:.1f}s", flush=True)
+            output.flush()
+            os.fsync(output.fileno())
+        verify(str(temporary), plan, schema, passthrough)
+        output_sha = file_hash(temporary)
+        os.replace(temporary, destination)
     manifest = {"recipe": RECIPE, "source": str(source), "source_sha256": source_sha,
                 "output": str(destination), "output_sha256": output_sha,
                 "output_bytes": destination.stat().st_size, "kitchen_version": metadata["k6_kitchen_version"],

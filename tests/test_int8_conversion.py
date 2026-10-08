@@ -63,3 +63,28 @@ def test_sensitive_layer_selection():
     for key in ("video_time_embeddings.in_layer.weight", "out_layer.out_layer.weight",
                 "visual_blocks.0.videoT.modulation.out_layer.weight", "visual_embeddings.in_layer.weight"):
         assert converter.group_size(key, (1792, 1792)) is None
+
+
+@pytest.mark.skipif(not torch.cuda.is_available(), reason="CUDA ConvRot kernels required")
+def test_source_cannot_collide_with_temporary_output(tmp_path, monkeypatch):
+    source = tmp_path / "output.safetensors.tmp"
+    target = tmp_path / "output.safetensors"
+    original = torch.randn(3, 64)
+    save_file({"block.weight": original}, source)
+    before = source.read_bytes()
+    monkeypatch.setattr(converter, "make_plan", lambda *args: (
+        [{"source": "block.weight", "key": "block.weight", "shape": [3, 64], "dtype": "F32", "group": 64}], {}))
+    converter.convert(source, target, rows=2)
+    assert source.read_bytes() == before
+    assert target.is_file()
+    assert not list(tmp_path.glob("output.safetensors.*.tmp"))
+
+
+@pytest.mark.parametrize("rows", [0, -1, 1.5])
+def test_invalid_chunk_size_fails_before_writing(tmp_path, rows):
+    target = tmp_path / "output.safetensors"
+    target.write_bytes(b"existing output")
+    with pytest.raises(ValueError, match="positive integer"):
+        converter.convert(tmp_path / "source.safetensors", target, rows=rows, overwrite=True)
+    assert target.read_bytes() == b"existing output"
+    assert list(tmp_path.iterdir()) == [target]

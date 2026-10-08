@@ -1,0 +1,226 @@
+{
+  "date": "2026-10-08",
+  "version": "0.1.1",
+  "reviewer": "/root/k6_crosscheck_20",
+  "completed_rounds": 20,
+  "scope": [
+    "Lite",
+    "Lite distill",
+    "Pro distill"
+  ],
+  "fixed_bug_categories": 10,
+  "tests": {
+    "python": {
+      "command": "python -m pytest --import-mode=importlib --confcutdir=tests tests -q",
+      "passed": 43
+    },
+    "javascript": {
+      "command": "node tests/test_downloads.mjs",
+      "passed": true
+    },
+    "native_headers": {
+      "checked": 6,
+      "passed": true
+    },
+    "new_real_native_sampling": {
+      "lite_i2av": {
+        "steps": 2,
+        "finite_video_audio": true,
+        "reference_max_error": 9.5367431640625e-7
+      },
+      "lite_distill_i2av": {
+        "steps": 2,
+        "finite_video_audio": true,
+        "reference_max_error": 2.384185791015625e-7
+      }
+    },
+    "prior_full_media_runs": 6,
+    "model_weights_changed": false
+  },
+  "rounds": [
+    {
+      "round": 1,
+      "topic": "Published package and minimum dependencies",
+      "reviewer": "No confirmed bug; ZIP CRC and 117 files checked; Python 3.10 AST; required native APIs present; pinned tested packages match declarations.",
+      "root": "Verified clean Git, required metadata and current runtime. HF 0.36 minimum stable download interfaces reviewed.",
+      "result": "pass"
+    },
+    {
+      "round": 2,
+      "topic": "Workflow download button and frontend stream",
+      "reviewer": "Confirmed missing kandinsky6_download_package marker in all four regenerated MarkdownNote nodes; readEvents matches the newline-delimited backend and rejects interrupted streams.",
+      "root": "Reproduced missing marker; repaired generator and regenerated four workflows. Dedicated frontend regression to follow.",
+      "result": "fix",
+      "files": [
+        "tools/build_workflows.py",
+        "example_workflows/*.json"
+      ]
+    },
+    {
+      "round": 3,
+      "topic": "Download manifest and existing-file integrity",
+      "reviewer": "Isolated one-byte TE file was marked ready and reused without HF invocation. Existing MODEL_SOURCES has all six exact sizes and SHA256.",
+      "root": "Added size/SHA to generated manifests; status uses exact size; explicit download verifies SHA with stat cache and forces one retry for corrupt HF cache before atomic install.",
+      "result": "fix",
+      "files": [
+        "model_downloads.py",
+        "tools/build_workflows.py",
+        "example_workflows/*.json"
+      ]
+    },
+    {
+      "round": 4,
+      "topic": "HTTP confirmation, concurrent downloads and disconnect cleanup",
+      "reviewer": "Real aiohttp TestServer plus controlled worker: bad confirmation400, parallel409, disconnect finishes only current file and retains lock, subsequent retry completes; ENOSPC/permission/generic errors correctly streamed.",
+      "root": "Inspected asyncio lifetime and isolated-test evidence; no confirmed additional production bug.",
+      "result": "pass"
+    },
+    {
+      "round": 5,
+      "topic": "CLI partial recovery and removed prompt lifetime",
+      "reviewer": "Mocked bad full-size partial failed twice with only one HTTP call. Native Comfy wipe/delete queue writes no history; runner had no queue check and waited forever.",
+      "root": "Corrupt downloader-owned partials are reset; formally installed files preserved. Runner confirms queue absence on three polls and rereads history before saving cancelled receipt and exiting.",
+      "result": "fix",
+      "files": [
+        "tools/download_models.py",
+        "tools/run_workflow.py"
+      ]
+    },
+    {
+      "round": 6,
+      "topic": "Converter complete released checkpoint structure",
+      "reviewer": "Read all three real headers; isolated 1.4MB fixture with 920 projected weights, absent audio output head and wrong 16x16 shapes was incorrectly accepted.",
+      "root": "Confirmed incomplete shape checks; adding header-derived full shape contract, allowing optional I2AV token types and validating both output head grid factors.",
+      "result": "fix",
+      "files": [
+        "kandinsky6/checkpoint.py",
+        "tools/convert_int8.py",
+        "kandinsky6/checkpoint_shapes.json"
+      ]
+    },
+    {
+      "round": 7,
+      "topic": "ConvRot chunk serialization and atomic output safety",
+      "reviewer": "Manifest counts/scales/passthrough correct. Reproduced source=output.safetensors.tmp being truncated by fixed temporary path before safe_open.",
+      "root": "Replaced fixed temporary path with unique same-filesystem TemporaryDirectory and automatic failure cleanup; rows validated before writes; added real CUDA collision regression.",
+      "result": "fix",
+      "files": [
+        "tools/convert_int8.py",
+        "tests/test_int8_conversion.py"
+      ]
+    },
+    {
+      "round": 8,
+      "topic": "Native checkpoint detection, registration and foreign model isolation",
+      "reviewer": "Base missing audio output head incorrectly accepted, followed by core strict=False load; collisions rejected before dict mutation, idempotent registration and foreign passthrough verified.",
+      "root": "Shared pure Python full shape validator in detector before normalization mutation, filtering native INT8 auxiliary keys. Base and PiFlow both require AV output heads.",
+      "result": "fix",
+      "files": [
+        "kandinsky6/register.py",
+        "kandinsky6/checkpoint.py"
+      ]
+    },
+    {
+      "round": 9,
+      "topic": "FP32 preservation, quantization, LoRA and native offload",
+      "reviewer": "Audited runtime against native Comfy loader; three headers show no FP32 bias on quantized Linear; existing real LoRA receipt reports change1.6894, ConvRot64 retained and finite output.",
+      "root": "No new bug. Full model shape validation preserves published INT8 auxiliary keys and does not cast existing weights.",
+      "result": "pass"
+    },
+    {
+      "round": 10,
+      "topic": "Joint latent durations and I2AV reference lifecycle",
+      "reviewer": "Real CPU NestedTensor tests for1fps/1frame,24fps/121frames and30fps/125frames; exact ceil audio count; I2 tail/masks/conditioning copy; remove restores original video/audio without modifying inputs.",
+      "root": "Inspected ordinary and I2 latent metadata; no confirmed new bug.",
+      "result": "pass"
+    },
+    {
+      "round": 11,
+      "topic": "Text encoder and PiFlow conditioning semantics",
+      "reviewer": "Template max1153/crop129/final normalized state correct. Reproduced single conditioning time/area/mask metadata silently ignored by PiFlow despite stated restriction.",
+      "root": "Added pre-GPU explicit validation for scheduled/regional/masked/hooks/control conditions, accepting full range defaults; forwarded audio context/pooled into PiFlow DiT.",
+      "result": "fix",
+      "files": [
+        "kandinsky6/piflow_conditioning.py",
+        "kandinsky6/sampling.py",
+        "tests/test_piflow_conditioning.py"
+      ]
+    },
+    {
+      "round": 12,
+      "topic": "Stock KSampler CFG, reference mask and packed latent scaling",
+      "reviewer": "Real CPU nested and packed probes confirm only video transforms, audio identity/bytes preserved. Native samplers mask clean reference and CONDRegular batches equal lengths only. Existing real unequal32/15 CFG/reference test passed.",
+      "root": "No new bug; inspected native inpaint call signature and latent format integration.",
+      "result": "pass"
+    },
+    {
+      "round": 13,
+      "topic": "PiFlow DX numerical integration and audio condition forwarding",
+      "reviewer": "Executed current rollout/DX math with CPU dummy10grid DiT: steps1/2/10, zero velocity identity, constant velocity analytic error<=6.56e-7, exact calls and reference restoration, separate audio context forwarded. Matched official shift5/eps1e-6/128substep/finalhalf formulas.",
+      "root": "No algorithmic defect. New conditioning changes preserve canonical PiFlow math.",
+      "result": "pass"
+    },
+    {
+      "round": 14,
+      "topic": "PiFlow interruption and model/prefetch cleanup",
+      "reviewer": "Injected pre_run and rollout failures clean normally. Confirmed prefetch_cleanup exception skips model.cleanup; core cleanup can raise GPU/graph errors.",
+      "root": "Added cleanup helper that always attempts both releases, logs cleanup failures, preserves active inference exception and raises first cleanup error on otherwise successful run.",
+      "result": "fix",
+      "files": [
+        "kandinsky6/runtime_cleanup.py",
+        "kandinsky6/sampling.py",
+        "tests/test_runtime_cleanup.py"
+      ]
+    },
+    {
+      "round": 15,
+      "topic": "Independent TOD/BigVGAN decode and native VAE tracking",
+      "reviewer": "Executed actual decode methods with controlled TOD/BigVGAN; BTF→BCT→BNC→BCN correct,scale.417 and canonical clip,realNestedTensor trim222338 at44100Hz, finite/short checks. Extra roots and installed paths match. Existing six full audio/video runs support unload/decode.",
+      "root": "No additional decoder defect; published independent components and model files unchanged.",
+      "result": "pass"
+    },
+    {
+      "round": 16,
+      "topic": "Native attention overrides, RoPE and DiT block patches",
+      "reviewer": "Executed FusedBlock forward with CPU recording branches: self/text received options but AV/VA cross attention did not. Native core uses options for optimized_attention_override. RoPE, precision and bound patch closure correct.",
+      "root": "Confirmed and passed transformer_options to both audio/video cross attention calls; ordinary no-override inference unchanged.",
+      "result": "fix",
+      "files": [
+        "kandinsky6/ldm/model.py"
+      ]
+    },
+    {
+      "round": 17,
+      "topic": "MagCache CFG lanes, clone lifetime and interrupted generations",
+      "reviewer": "CPU split/batched lane compute/skip decisions agree and completed residuals released. Reproduced first-step interruption restart at same1000 timestep reusing stale residuals; UI retention0 legal; default calibration step offset also affected.",
+      "root": "Added explicit reset_generation; hooked native ModelPatcher ON_PRE_RUN and ON_CLEANUP through keyed callbacks resolving cache from current clone. No model downloads; MagCache remains excluded for Lite/PiFlow.",
+      "result": "fix",
+      "files": [
+        "kandinsky6/magcache.py",
+        "kandinsky6/nodes.py",
+        "tests/test_magcache_lifecycle.py"
+      ]
+    },
+    {
+      "round": 18,
+      "topic": "Optional prompt beautifier lazy bypass and native Qwen API",
+      "reviewer": "FakeClip disabled makes zero model calls; three malformed attempts/errors,2^64 seed wrap, valid audio tag split andMTPFalse tested; matched actual Qwen35 CLIP.generate/tokenizer interface. No real Qwen35 weight run claimed.",
+      "root": "No additional beautifier bug.",
+      "result": "pass"
+    },
+    {
+      "round": 19,
+      "topic": "Independent regression of repaired code and native lifecycle",
+      "reviewer": "Independent33CPU tests + JS pass;3raw plans and3converted headers pass;6checksum manifests,4download markers andaudio scale match. Real CPU Comfy ModelPatcher tested pre_run/cleanup/reset and keyed callback deduplication.",
+      "root": "Full43tests + JS pass; native six-header detector pass, new real small Lite+LiteD I2 runs finite with reference errors9.54e-7/2.38e-7. Python3.10 AST51files and gitdiffcheck pass.",
+      "result": "pass"
+    },
+    {
+      "round": 20,
+      "topic": "Final source and official Registry release readiness",
+      "reviewer": "No blocking bug. Reviewed all repair closures,version0.1.1,t8star metadata,Python3.10 parse,gitdiff,language/social links,weights unchanged,pinned official action. New runtime schema/conditioning/cleanup files must be committed and verified in actual0.1.1 archive; old0.1.0 ZIP is not evidence.",
+      "root": "20 actual numbered discussion rounds completed. Proceeding to official GitHub Action publication and fresh archive CRC/runtime entry verification.",
+      "result": "pass"
+    }
+  ]
+}

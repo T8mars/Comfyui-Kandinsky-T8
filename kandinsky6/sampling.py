@@ -8,10 +8,13 @@ import comfy.utils
 import torch
 
 from .piflow_contract import PIFLOW_DEFAULTS
+from .piflow_conditioning import joint_conditioning
+from .runtime_cleanup import cleanup_sampling
 from .piflow_math import DXPolicy, policy_rollout_fm, shift_timesteps
 
 
-def rollout(dit, video, audio, context, pooled, *, steps, dtype, reference=None, transformer_options=None):
+def rollout(dit, video, audio, context, pooled, *, steps, dtype, reference=None, transformer_options=None,
+            audio_context=None, audio_pooled=None):
     """Canonical multimodal DX rollout; one DiT evaluation per segment."""
     params = PIFLOW_DEFAULTS
     eps, shift = float(params["eps"]), float(params["shift"])
@@ -34,6 +37,8 @@ def rollout(dit, video, audio, context, pooled, *, steps, dtype, reference=None,
             sigma_src * 1000.0,
             context=context,
             y=pooled,
+            k6_audio_context=audio_context,
+            k6_audio_pooled_output=audio_pooled,
             k6_reference_tail=reference is not None,
             transformer_options=options,
         )
@@ -62,9 +67,7 @@ def rollout(dit, video, audio, context, pooled, *, steps, dtype, reference=None,
 
 
 def sample_piflow(model, latent, positive, seed, steps):
-    if len(positive) != 1:
-        raise ValueError("K6 PiFlow expects one joint video/audio conditioning, without regional or scheduled prompts.")
-    context, metadata = positive[0]
+    context, metadata = joint_conditioning(positive)
     device = model.load_device
     dtype = model.model.get_dtype_inference()
     mm.load_models_gpu([model], memory_required=model.model.memory_required(latent["samples"].shape))
@@ -85,11 +88,12 @@ def sample_piflow(model, latent, positive, seed, steps):
             dtype=dtype,
             reference=reference,
             transformer_options=model.model_options.get("transformer_options", {}),
+            audio_context=mm.cast_to_device(metadata.get("k6_audio_context", context), device, dtype),
+            audio_pooled=mm.cast_to_device(metadata.get("k6_audio_pooled_output", metadata["pooled_output"]), device, dtype),
         )
         samples = model.model.process_latent_out(comfy.nested_tensor.NestedTensor([video, audio]))
         result = latent.copy()
         result["samples"] = samples.to(device=mm.intermediate_device(), dtype=mm.intermediate_dtype())
         return result
     finally:
-        comfy.model_prefetch.cleanup_prefetch_queues()
-        model.cleanup()
+        cleanup_sampling(model, comfy.model_prefetch.cleanup_prefetch_queues)

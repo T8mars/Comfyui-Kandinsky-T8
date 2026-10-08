@@ -7,7 +7,7 @@ import comfy.supported_models
 
 from .core_contract import DIT_CONFIG, GENERATION_DEFAULTS
 from .supported_model import Kandinsky6
-from .checkpoint import native_key as _native_key
+from .checkpoint import native_key as _native_key, validate_released_shapes
 
 # The generated contract describes Pro. Lite is the same architecture at a
 # smaller size, so only its dimensions are listed here (k6_video
@@ -79,6 +79,9 @@ def _detect_diffusers_k6(state_dict, key_prefix):
 
 def _detect_k6(state_dict, key_prefix):
     kp = key_prefix
+    auxiliary = (".comfy_quant", ".weight_scale", ".input_scale")
+    validate_released_shapes({key[len(kp):]: tensor.shape for key, tensor in state_dict.items()
+                              if key.startswith(kp) and not key.endswith(auxiliary)})
 
     def get_tensor(name):
         return state_dict[f"{kp}{name}"]
@@ -142,8 +145,8 @@ def _detect_k6(state_dict, key_prefix):
         raise ValueError("Released K6 checkpoints use one flow head or ten PiFlow grids.")
     audio_output_key = f"{kp}audio_outLayer.out_layer.weight"
     cfg["out_audio_dim"] = int(dit_config["in_audio_dim"]) * cfg["n_grid"]
-    if cfg["n_grid"] > 1 and audio_output_key not in state_dict:
-        raise ValueError("Kandinsky 6 PiFlow checkpoint is missing its audio DX output head.")
+    if audio_output_key not in state_dict:
+        raise ValueError("Kandinsky 6 checkpoint is missing its audio output head.")
     if audio_output_key in state_dict and state_dict[audio_output_key].shape[0] != cfg["out_audio_dim"]:
         raise ValueError("Kandinsky 6 video and audio DX grid sizes do not match.")
     cfg["model_dim_a"] = get_tensor("audio_embeddings.in_layer.weight").shape[0]

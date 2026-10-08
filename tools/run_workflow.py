@@ -56,6 +56,7 @@ def main():
     print(f"QUEUED {prompt_id}", flush=True)
     started = time.monotonic()
     next_log = started + 30
+    missing = 0
     while True:
         history = request(url + "/history/" + prompt_id)
         if prompt_id in history:
@@ -69,6 +70,23 @@ def main():
             if status["status_str"] != "success":
                 raise RuntimeError("Workflow failed; see the saved execution receipt")
             break
+        queue = request(url + "/queue")
+        queued = any(item[1] == prompt_id for name in ("queue_running", "queue_pending")
+                     for item in queue.get(name, []))
+        missing = 0 if queued else missing + 1
+        if missing >= 3:
+            # Completion can occur between history and queue reads. Read history
+            # once more before reporting a removed prompt as cancelled.
+            if prompt_id in request(url + "/history/" + prompt_id):
+                continue
+            path = args.receipt or args.workflow.with_suffix(".receipt.json")
+            path.parent.mkdir(parents=True, exist_ok=True)
+            receipt = {"prompt_id": prompt_id, "workflow": str(args.workflow),
+                       "elapsed_seconds": time.monotonic() - started, "graph": graph,
+                       "history": {"status": {"status_str": "cancelled", "completed": False},
+                                   "outputs": {}, "reason": "Prompt removed from queue without execution history"}}
+            path.write_text(json.dumps(receipt, indent=2) + "\n", encoding="utf-8")
+            raise RuntimeError(f"Workflow cancelled or removed from queue; see {path}")
         if time.monotonic() >= next_log:
             print(f"RUNNING {prompt_id} elapsed={time.monotonic()-started:.0f}s", flush=True)
             next_log = time.monotonic() + 30

@@ -301,8 +301,10 @@ class FusedTransformerDecoderBlock(nn.Module):
         rope_q_av = audio_rope if self.ca_rope else None
         rope_kv_av = visual_rope if self.ca_rope else None
 
-        visual_out_a = self.va_cross_attention(visual_out_a, audio_before, rope_q=rope_q_va, rope_kv=rope_kv_va)
-        audio_out_v = self.av_cross_attention(audio_out_v, visual_before, rope_q=rope_q_av, rope_kv=rope_kv_av)
+        visual_out_a = self.va_cross_attention(visual_out_a, audio_before, rope_q=rope_q_va, rope_kv=rope_kv_va,
+                                             transformer_options=transformer_options)
+        audio_out_v = self.av_cross_attention(audio_out_v, visual_before, rope_q=rope_q_av, rope_kv=rope_kv_av,
+                                             transformer_options=transformer_options)
 
         va_gate_applied = av_gate if self.cross_gates else va_gate
         av_gate_applied = va_gate if self.cross_gates else av_gate

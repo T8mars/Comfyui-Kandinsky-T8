@@ -67,12 +67,16 @@
           {
             "name": "qwen_2.5_vl_7b.safetensors",
             "directory": "text_encoders",
-            "url": "https://huggingface.co/Comfy-Org/Qwen-Image_ComfyUI/resolve/1f12b17be14c89b026c51a91d67c32f84bb047bc/split_files/text_encoders/qwen_2.5_vl_7b.safetensors"
+            "url": "https://huggingface.co/Comfy-Org/Qwen-Image_ComfyUI/resolve/1f12b17be14c89b026c51a91d67c32f84bb047bc/split_files/text_encoders/qwen_2.5_vl_7b.safetensors",
+            "size": 16584415576,
+            "sha256": "cfafd739459bc86257397259f612a9aee88e5b98e85b5c0d0d1717e898b3463a"
           },
           {
             "name": "clip_l.safetensors",
             "directory": "text_encoders",
-            "url": "https://huggingface.co/Comfy-Org/HunyuanVideo_repackaged/resolve/533a43813f01517d9e624f9e824a85bb94094120/split_files/text_encoders/clip_l.safetensors"
+            "url": "https://huggingface.co/Comfy-Org/HunyuanVideo_repackaged/resolve/533a43813f01517d9e624f9e824a85bb94094120/split_files/text_encoders/clip_l.safetensors",
+            "size": 246144152,
+            "sha256": "660c6f5b1abae9dc498ac2d21e1347d2abdb0cf6c0c0c8576cd796491d9a6cdd"
           }
         ]
       },
@@ -115,7 +119,9 @@
           {
             "name": "hunyuan_video_vae_bf16.safetensors",
             "directory": "vae",
-            "url": "https://huggingface.co/Comfy-Org/HunyuanVideo_repackaged/resolve/533a43813f01517d9e624f9e824a85bb94094120/split_files/vae/hunyuan_video_vae_bf16.safetensors"
+            "url": "https://huggingface.co/Comfy-Org/HunyuanVideo_repackaged/resolve/533a43813f01517d9e624f9e824a85bb94094120/split_files/vae/hunyuan_video_vae_bf16.safetensors",
+            "size": 492984198,
+            "sha256": "e8f8553275406d84ccf22e7a47601650d8f98bdb8aa9ccfdd6506b57a9701aed"
           }
         ]
       },
@@ -154,17 +160,23 @@
           {
             "name": "v1-44.pth",
             "directory": "audio_vae",
-            "url": "https://huggingface.co/hkchengrex/MMAudio/resolve/eb13a1a98fdbec91753775c57b074ccdfc60587c/ext_weights/v1-44.pth"
+            "url": "https://huggingface.co/hkchengrex/MMAudio/resolve/eb13a1a98fdbec91753775c57b074ccdfc60587c/ext_weights/v1-44.pth",
+            "size": 1221942998,
+            "sha256": "ab6cc15dc31947675f75c950c41f4dcfd0d6d1817555ac871f809ec388e4651a"
           },
           {
             "name": "bigvgan_vocoder/bigvgan_generator.pt",
             "directory": "audio_vae",
-            "url": "https://huggingface.co/nvidia/bigvgan_v2_44khz_128band_512x/resolve/95a9d1dcb12906c03edd938d77b9333d6ded7dfb/bigvgan_generator.pt"
+            "url": "https://huggingface.co/nvidia/bigvgan_v2_44khz_128band_512x/resolve/95a9d1dcb12906c03edd938d77b9333d6ded7dfb/bigvgan_generator.pt",
+            "size": 489041291,
+            "sha256": "d9fe7ec6bd0b44ed9d66973d5012d8181c1570b01e5c72df51973e241dccd357"
           },
           {
             "name": "bigvgan_vocoder/config.json",
             "directory": "audio_vae",
-            "url": "https://huggingface.co/nvidia/bigvgan_v2_44khz_128band_512x/resolve/95a9d1dcb12906c03edd938d77b9333d6ded7dfb/config.json"
+            "url": "https://huggingface.co/nvidia/bigvgan_v2_44khz_128band_512x/resolve/95a9d1dcb12906c03edd938d77b9333d6ded7dfb/config.json",
+            "size": 1403,
+            "sha256": "65b7f487bfaf15256056a75f6667ef5f640214c981922a111927873705ea4ddb"
           }
         ]
       },
@@ -768,7 +780,9 @@
       "mode": 0,
       "inputs": [],
       "outputs": [],
-      "properties": {},
+      "properties": {
+        "kandinsky6_download_package": "kandinsky6"
+      },
       "widgets_values": [
         "# K6 INT8 Base Image to Video+Audio\nComfyUI 0.39+ with comfy-kitchen 0.2.37+. Place the converted single-file DiT in diffusion_models. The download button supplies independent TE/VAE/audio components. Convert the DiT with tools/convert_int8.py.\n\nStock KSampler: 50 steps, CFG=5, Euler/simple, audio scale=0.5302, flow shift=5.\n\n864\u00d7480, 121 frames at 24 fps. Change the UNET filename to the matching Pro variant to use Pro."
       ]
