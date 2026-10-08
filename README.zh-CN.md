@@ -48,7 +48,7 @@ ComfyUI/models/
 
 导入 [Base 或 PiFlow 工作流](example_workflows)，在 **UNETLoader** 中选择对应模型，保持 `weight_dtype=default`。Lite 使用 Base；两个蒸馏版使用 PiFlow。按输入方式选择 Text 或 Image 工作流。
 
-默认输出 **864×480、121 帧、24 fps**，生成带音轨的 MP4。宽高需为 16 的倍数，帧数需为 `4*n+1`；PiFlow 使用 CFG=1、denoise=1 和一条覆盖全程的全局条件。
+默认输出 **864×480、121 帧、24 fps**，生成带音轨的 MP4。宽高需为 16 的倍数，帧数需为 `4*n+1`；PiFlow 使用 CFG=1、denoise=1 和一条覆盖全程的全局条件，遮罩仅支持 Image 工作流的干净参考尾帧。
 
 接入官方 **UNETLoader / ModelPatcher**、**DualCLIPLoader（`kandinsky5`）**、**VAELoader**、latent/conditioning 接口及显存卸载机制，无需修改 ComfyUI 核心。Lite 使用官方 KSampler；蒸馏版通过 Kandinsky6Sampler 执行专用 PiFlow 采样。
 

@@ -2,6 +2,7 @@
 import argparse
 import concurrent.futures
 import hashlib
+from http.client import IncompleteRead
 import json
 import os
 import shutil
@@ -76,7 +77,9 @@ def download(item, root):
                     pass
                 offset = 0
             if offset > item["size"]:
-                raise ValueError(f"Partial file exceeds expected size: {partial}")
+                with partial.open("wb"):
+                    pass
+                offset = 0
             if shutil.disk_usage(root).free < item["size"] - offset + (2 << 30):
                 raise OSError(f"Not enough free space for {destination}")
             url = f"https://huggingface.co/{item['repo']}/resolve/{item['revision']}/{item['filename']}?download=true&resume={offset}"
@@ -91,6 +94,9 @@ def download(item, root):
                             stream.write(block)
                             offset += len(block)
                             if offset > item["size"]:
+                                # Discard this downloader-owned oversized response
+                                # so a corrected server can be retried later.
+                                stream.truncate(0)
                                 raise ValueError("Download exceeded upstream size")
                             if time.monotonic() - last_log >= 20:
                                 print(f"DOWNLOAD {item['destination']} {offset / 1e9:.2f}/{item['size'] / 1e9:.2f} GB", flush=True)
@@ -98,7 +104,7 @@ def download(item, root):
                 if offset != item["size"]:
                     raise OSError(f"Incomplete response: {offset}/{item['size']}")
                 break
-            except (OSError, urllib.error.URLError) as exc:
+            except (OSError, urllib.error.URLError, IncompleteRead) as exc:
                 print(f"RETRY {item['destination']} attempt={attempt + 1} {exc}", flush=True)
                 if attempt == 7:
                     raise
@@ -124,7 +130,7 @@ def main():
     args = parser.parse_args()
     args.models.mkdir(parents=True, exist_ok=True)
     items = []
-    for variant in args.variants:
+    for variant in dict.fromkeys(args.variants):
         repo, revision = VARIANTS[variant]
         items.append(describe("kandinskylab/" + repo, revision, "transformer/diffusion_pytorch_model.safetensors", f"sources/{variant}.safetensors"))
     if args.components:

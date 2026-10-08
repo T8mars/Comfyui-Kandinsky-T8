@@ -125,11 +125,14 @@ def make_gui(graph, image, distilled, title):
     note_id = 30
     nodes.append({"id":note_id,"type":"MarkdownNote","pos":[50,1420 if image else 1030],"size":[680,260],"flags":{},"order":len(nodes),"mode":0,
                   "inputs":[],"outputs":[],"properties":{"kandinsky6_download_package":"kandinsky6"},"widgets_values":[
-                      f"# {title}\nComfyUI 0.39+ with comfy-kitchen 0.2.37+. Place the converted single-file DiT in diffusion_models. "
-                      "The download button supplies independent TE/VAE/audio components. Convert the DiT with tools/convert_int8.py.\n\n"
+                      f"# {title}\nComfyUI 0.39+ with comfy-kitchen 0.2.37+. Download a ready INT8 DiT from "
+                      "[Kandinsky-Comfy](https://huggingface.co/t8star/Kandinsky-Comfy) into diffusion_models. "
+                      "The download button supplies independent TE/VAE/audio components. Optional conversion: tools/convert_int8.py.\n\n"
                       + ("PiFlow: 10 steps, CFG=1, denoise=1, audio scale=0.417. Sampler/scheduler dropdowns are unused for PiFlow."
                          if distilled else "Stock KSampler: 50 steps, CFG=5, Euler/simple, audio scale=0.5302, flow shift=5.")
-                      + "\n\n864×480, 121 frames at 24 fps. Change the UNET filename to the matching Pro variant to use Pro."
+                      + "\n\n864×480, 121 frames at 24 fps. "
+                      + ("Choose Lite distill or Pro distill in UNETLoader."
+                         if distilled else "Use Lite for Base; use the PiFlow examples for Lite distill or Pro distill.")
                   ]})
     return {"last_node_id":note_id,"last_link_id":len(links),"nodes":nodes,"links":links,"groups":[],
             "config":{},"extra":{"ds":{"scale":0.45,"offset":[20,30]}},"version":0.4}

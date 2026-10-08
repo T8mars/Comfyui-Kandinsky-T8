@@ -8,6 +8,8 @@ import hashlib
 import json
 import logging
 import re
+from stat import S_ISREG
+import sys
 from pathlib import Path, PurePosixPath
 from urllib.parse import urlsplit
 
@@ -58,13 +60,26 @@ def model_plan(workflows: Path) -> list[dict]:
     return list(entries.values())
 
 
-def existing_model(entry, models_root, extra_roots):
-    roots = [models_root / entry["directory"], *extra_roots.get(entry["directory"], [])]
+def model_location(entry, models_root, extra_roots):
+    """Match the loader's configured order, including corrupt shadowing files."""
+    default = models_root / entry["directory"]
+    roots = [Path(root) for root in extra_roots.get(entry["directory"], [])]
+    if not any(root.resolve() == default.resolve() for root in roots):
+        roots.append(default)
     for root in roots:
-        candidate = Path(root) / entry["name"]
-        if candidate.is_file() and candidate.stat().st_size == entry["size"]:
-            return candidate
-    return None
+        candidate = root / entry["name"]
+        if candidate.is_file():
+            return root, candidate
+    return default, default / entry["name"]
+
+
+def existing_model(entry, models_root, extra_roots):
+    _, candidate = model_location(entry, models_root, extra_roots)
+    try:
+        file_stat = candidate.stat()
+    except FileNotFoundError:
+        return None
+    return candidate if S_ISREG(file_stat.st_mode) and file_stat.st_size == entry["size"] else None
 
 
 def verified_model(path, entry):
@@ -93,8 +108,7 @@ def download_model(entry, models_root, extra_roots):
     existing = existing_model(entry, models_root, extra_roots)
     if existing is not None and verified_model(existing, entry):
         return "reused"
-    category = models_root / entry["directory"]
-    destination = category / entry["name"]
+    category, destination = model_location(entry, models_root, extra_roots)
     if not destination.parent.resolve().is_relative_to(category.resolve()):
         raise ValueError("Incomplete model bundle points outside its configured folder")
     destination.parent.mkdir(parents=True, exist_ok=True)
@@ -115,6 +129,9 @@ def download_model(entry, models_root, extra_roots):
     existing = existing_model(entry, models_root, extra_roots)
     if existing is not None and verified_model(existing, entry):
         return "reused"
+    _, selected = model_location(entry, models_root, extra_roots)
+    if selected.resolve() != destination.resolve():
+        raise ValueError("Model folder priority changed while downloading; retry to repair the selected file")
     downloaded.replace(destination)
     return "downloaded"
 
@@ -192,6 +209,28 @@ def register_routes(routes, package_id, workflows, models_root, extra_roots):
                 logging.exception("Kandinsky model download failed")
                 await send({"status": "error", "message": download_error(error)})
             finally:
-                if task is not None and not task.done():
-                    await asyncio.shield(task)
+                cancellation = sys.exc_info()[1]
+                if not isinstance(cancellation, asyncio.CancelledError):
+                    cancellation = None
+                worker_error_logged = False
+                while task is not None and not task.done():
+                    try:
+                        await asyncio.shield(task)
+                    except asyncio.CancelledError as error:
+                        # Repeated handler cancellation must not release the
+                        # package lock while its authorized file is still written.
+                        if cancellation is None:
+                            cancellation = error
+                    except Exception:
+                        if cancellation is None:
+                            raise
+                        logging.exception("Kandinsky download worker failed after request cancellation")
+                        worker_error_logged = True
+                if cancellation is not None:
+                    if task is not None and task.done() and not task.cancelled():
+                        error = task.exception()
+                        if error is not None and not worker_error_logged:
+                            logging.error("Kandinsky download worker failed after request cancellation",
+                                          exc_info=(type(error), error, error.__traceback__))
+                    raise cancellation
             return response

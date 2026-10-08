@@ -81,3 +81,39 @@ def test_shipped_manifest_has_verified_pinned_components():
                       == (model["repo_id"], model["revision"], model["filename"]))
         assert model["size"] == source["size"]
         assert model["sha256"] == source["actual_sha256"]
+
+
+@pytest.mark.parametrize("extra_first", [False, True])
+@pytest.mark.parametrize("bad", [b"X", b"wrong model"])
+def test_corrupt_priority_file_is_repaired_in_actual_loader_location(tmp_path, monkeypatch, extra_first, bad):
+    model = entry()
+    default = tmp_path / "models" / model["directory"]
+    extra = tmp_path / "extra"
+    default.mkdir(parents=True)
+    extra.mkdir()
+    roots = [extra, default] if extra_first else [default, extra]
+    (roots[0] / model["name"]).write_bytes(bad)
+    (roots[1] / model["name"]).write_bytes(b"valid model")
+    cached = tmp_path / "cached"
+    cached.write_bytes(b"valid model")
+    monkeypatch.setattr(downloads, "hf_hub_download", lambda **kwargs: cached)
+    extras = {model["directory"]: roots}
+    assert downloads.model_location(model, tmp_path / "models", extras)[1] == roots[0] / model["name"]
+    if len(bad) != model["size"]:
+        assert downloads.existing_model(model, tmp_path / "models", extras) is None
+    assert downloads.download_model(model, tmp_path / "models", extras) == "downloaded"
+    assert (roots[0] / model["name"]).read_bytes() == b"valid model"
+    assert (roots[1] / model["name"]).read_bytes() == b"valid model"
+
+
+def test_removed_model_during_status_query_is_not_ready(tmp_path, monkeypatch):
+    model = entry()
+    path = tmp_path / model["name"]
+    path.write_bytes(b"valid model")
+
+    def locate(*args):
+        path.unlink()
+        return tmp_path, path
+
+    monkeypatch.setattr(downloads, "model_location", locate)
+    assert downloads.existing_model(model, tmp_path, {}) is None

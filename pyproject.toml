@@ -1,12 +1,13 @@
 [project]
 name = "kandinsky-t8"
 description = "Native Kandinsky 6 video/audio nodes and single-file INT8 ConvRot conversion"
-version = "0.1.1"
+version = "0.1.2"
 license = { file = "LICENSE" }
 requires-python = ">=3.10"
 classifiers = ["Environment :: GPU :: NVIDIA CUDA"]
 dependencies = [
     "comfy-kitchen>=0.2.37",
+    "filelock>=3.13.1",
     "einops>=0.8.0",
     "huggingface-hub>=0.36.0",
     "librosa>=0.10.2",

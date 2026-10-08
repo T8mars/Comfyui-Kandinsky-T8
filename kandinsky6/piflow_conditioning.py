@@ -14,6 +14,6 @@ def joint_conditioning(positive):
     if unsupported:
         raise ValueError("K6 PiFlow does not support regional, masked, scheduled or hooked conditioning: "
                          + ", ".join(unsupported))
-    if "pooled_output" not in metadata:
+    if metadata.get("pooled_output") is None:
         raise ValueError("K6 PiFlow requires CLIP-L pooled conditioning.")
     return context, metadata

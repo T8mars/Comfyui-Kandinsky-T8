@@ -9,6 +9,7 @@ import torch
 
 from .piflow_contract import PIFLOW_DEFAULTS
 from .piflow_conditioning import joint_conditioning
+from .piflow_latent import validate_noise_mask
 from .runtime_cleanup import cleanup_sampling
 from .piflow_math import DXPolicy, policy_rollout_fm, shift_timesteps
 
@@ -68,6 +69,13 @@ def rollout(dit, video, audio, context, pooled, *, steps, dtype, reference=None,
 
 def sample_piflow(model, latent, positive, seed, steps):
     context, metadata = joint_conditioning(positive)
+    validate_noise_mask(latent)
+    audio_context = metadata.get("k6_audio_context")
+    audio_pooled = metadata.get("k6_audio_pooled_output")
+    if audio_context is None:
+        audio_context = context
+    if audio_pooled is None:
+        audio_pooled = metadata["pooled_output"]
     device = model.load_device
     dtype = model.model.get_dtype_inference()
     mm.load_models_gpu([model], memory_required=model.model.memory_required(latent["samples"].shape))
@@ -88,8 +96,8 @@ def sample_piflow(model, latent, positive, seed, steps):
             dtype=dtype,
             reference=reference,
             transformer_options=model.model_options.get("transformer_options", {}),
-            audio_context=mm.cast_to_device(metadata.get("k6_audio_context", context), device, dtype),
-            audio_pooled=mm.cast_to_device(metadata.get("k6_audio_pooled_output", metadata["pooled_output"]), device, dtype),
+            audio_context=mm.cast_to_device(audio_context, device, dtype),
+            audio_pooled=mm.cast_to_device(audio_pooled, device, dtype),
         )
         samples = model.model.process_latent_out(comfy.nested_tensor.NestedTensor([video, audio]))
         result = latent.copy()

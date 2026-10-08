@@ -12,6 +12,7 @@ import torch
 
 from .core_contract import DIT_CONFIG
 from .ldm.model import Kandinsky6 as Kandinsky6DiT
+from .quantization import validate_int8_state_dict
 
 
 class Kandinsky6NativeAVDiT(Kandinsky6DiT):
@@ -27,6 +28,7 @@ class Kandinsky6NativeAVDiT(Kandinsky6DiT):
         return super()._forward(*args, **kwargs)
 
     def load_state_dict(self, state_dict, strict=True, assign=False):
+        validate_int8_state_dict(state_dict)
         # MixedPrecisionOps otherwise casts every unmarked Linear to its
         # inference dtype. Preserve original FP32 parameters, including the
         # canonical time/modulation MLPs, across loading and offload/reload.

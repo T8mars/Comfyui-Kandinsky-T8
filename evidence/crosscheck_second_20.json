@@ -1,0 +1,266 @@
+{
+  "version": "0.1.2",
+  "baseline_version": "0.1.1",
+  "baseline_commit": "27591230dcb4d761e8121146e56b065c208ec19e",
+  "date": "2026-10-08",
+  "target_rounds": 20,
+  "completed_rounds": 20,
+  "status": "review_complete",
+  "reviewer": "/root/k6_crosscheck_second20",
+  "workflow": "Each round was independently reviewed and reported by the subagent; root applied and tested confirmed fixes before continuing.",
+  "scope": [
+    "Lite",
+    "Lite distill",
+    "Pro distill"
+  ],
+  "weights_modified": false,
+  "regressions": {
+    "pytest_passed": 77,
+    "pytest_skipped": 0,
+    "node_suites_passed": 1,
+    "node_tests_passed": 1,
+    "python310_ast_files": 58,
+    "runtime_python_files": 45,
+    "workflow_links_validated": 72,
+    "required_package_assets_checked": 80,
+    "ruff": "F checks passed excluding two existing vendored export files (four existing F401/F403 diagnostics).",
+    "final_focused_checks": 18
+  },
+  "native_checks": {
+    "lite_i2av": {
+      "steps": 2,
+      "dimensions": [
+        256,
+        256
+      ],
+      "frames": 17,
+      "reference_max_error": 9.5367431640625e-7,
+      "finite": true,
+      "elapsed_seconds": 12.26600000000326
+    },
+    "lite_distill_i2av": {
+      "steps": 2,
+      "dimensions": [
+        256,
+        256
+      ],
+      "frames": 17,
+      "reference_max_error": 2.384185791015625e-7,
+      "finite": true,
+      "elapsed_seconds": 10.422000000005937,
+      "includes_final_noise_mask_validation": true
+    },
+    "published_int8_auxiliary_layers": [
+      920,
+      920,
+      1728
+    ],
+    "audio_decode": {
+      "sample_rate": 44100,
+      "canonical_samples": 31238,
+      "stock_samples": 31744,
+      "finite": true,
+      "reference_removal_equal": true
+    },
+    "restarted_service": {
+      "verified_reused_components": 6,
+      "new_downloads": 0
+    }
+  },
+  "huggingface_card_commit": "3ce9c8e77681becc3dcba06cbeb1bfee2c3f01ec",
+  "publication": "Pending final review and fresh GitHub/Registry package readback.",
+  "rounds": [
+    {
+      "round": 1,
+      "topic": "New review baseline and published 0.1.1 regression",
+      "reviewer": "Independently checked clean HEAD2759123,new ZIP121files/CRC/SHA/source,Python3.10 AST and all43tests+JS; no new regression. Identified cancellation/clone/root/schema boundaries for deeper testing.",
+      "root": "Read repaired source and release receipts; new20-round cycle is distinct from prior completed20.",
+      "result": "pass"
+    },
+    {
+      "round": 2,
+      "topic": "Downloader vs native configured model-root priority",
+      "reviewer": "Real folder_paths, primary X and extra GOOD plus is_default extra-first reverse arrangement: download reused while native loader chose corrupt first file.",
+      "root": "Added model_location using real configured roots and first is_file. Size/SHA evaluate selected file, atomic repair uses its actual root. Priority change during download fails rather than false complete. Four isolated priority/hash regressions pass.",
+      "result": "fix",
+      "files": [
+        "model_downloads.py",
+        "tests/test_model_downloads.py"
+      ]
+    },
+    {
+      "round": 3,
+      "topic": "Repeated asyncio handler cancellation and active writer ownership",
+      "reviewer": "Real aiohttp and controlled thread: first handler cancel retains409; second cancel released lock and allowed200/two active workers. Normal Comfy client disconnect does not cancel handler; boundary is repeated handler/shutdown cancellation.",
+      "root": "Finally now continues shielding authorized current worker through repeated cancellation and propagates cancellation after release; actual aiohttp double-cancel regression passes.",
+      "result": "fix",
+      "files": [
+        "model_downloads.py",
+        "tests/test_download_routes.py"
+      ]
+    },
+    {
+      "round": 4,
+      "topic": "Hash-cache replacement and status-query file deletion race",
+      "reviewer": "Actual same-size edits and atomic replaces invalidate hash cache. Reproduced path deleted between selection/stat causing GET500. Cancellation cleanup also must log worker failure and preserve CancelledError.",
+      "root": "Status uses one regular-file stat and handles deletion as not-ready. Cancellation observes completed worker exceptions, logs them and preserves original cancellation;12 targeted tests pass.",
+      "result": "fix",
+      "files": [
+        "model_downloads.py",
+        "tests/test_model_downloads.py",
+        "tests/test_download_routes.py"
+      ]
+    },
+    {
+      "round": 5,
+      "topic": "Oversized partial recovery, chunked response and duplicate variant writers",
+      "reviewer": "Small responses reproduce oversized partial permanently failing future retry; duplicateCLI variants create two writers and missing rename/receipt; IncompleteRead bypasses automatic retry but manual resume possible.",
+      "root": "Reset oversized downloader-owned partial and response, deduplicate variants preserving order, include IncompleteRead in existing retry policy. Seven CLI tests pass.",
+      "result": "fix",
+      "files": [
+        "tools/download_models.py",
+        "tests/test_cli_tools.py"
+      ]
+    },
+    {
+      "round": 6,
+      "topic": "API runner status atomics and four graph parameter overrides",
+      "reviewer": "Real core writes running removal/history atomically and success/completed together. FakeAPI tests all4graph overrides including seed0,dimensions,frames,prefix preserve connections and save success receipts. No promised reconnect behavior.",
+      "root": "No confirmed new runner bug; oversized partial uses original stream truncate to prevent buffered-close restoring invalid bytes.",
+      "result": "pass"
+    },
+    {
+      "round": 7,
+      "topic": "Concurrent converter commits and weight/manifest rollback",
+      "reviewer": "Real2x2CPU safetensors: two default conversions both overwrite same output; manifest write fault after overwrite leaves old receipt mismatching new weights.",
+      "root": "Added crash-released FileLock plus commit-time existence check. Receipt staged/fsynced before commit; same-FS previous weight backup rolls back on receipt publish failure; recovery data retained if rollback fails. Original8 conversion tests pass; new concurrency/rollback tests added.",
+      "result": "fix",
+      "files": [
+        "tools/convert_int8.py",
+        "tests/test_int8_conversion.py",
+        "requirements.txt",
+        "pyproject.toml"
+      ]
+    },
+    {
+      "round": 8,
+      "topic": "Full checkpoint prefixes and native INT8 save roundtrip",
+      "reviewer": "Actualsixheaders x emptyprefix/model.diffusion_model prefix12cases pass, externalVAE keys excluded; native MixedPrecision INT8ConvRot64 roundtrip yields only weight/scale/marker, no unsupported auxiliary requirement. Noted fixed lock/manifest source alias boundaries.",
+      "root": "No schema regression. Added early source alias rejection for checkpoint,lock andmanifest outputs; conversion suite including concurrency+rollback now13 tests.",
+      "result": "pass"
+    },
+    {
+      "round": 9,
+      "topic": "Native INT8 metadata and scale integrity",
+      "reviewer": "Actual tiny CUDA native MixedPrecision loads INT8 without marker as BF16; negative scales invert output and NaN yields nonfinite output. Existing core rejects malformed JSON/missing scales.",
+      "root": "Added pre-construction and direct-native load validation for INT8 marker/scale pairing, positive finite scale, shapes and ConvRot groups without scanning weights. Eight corruption/prefix/passthrough tests pass.",
+      "result": "fix",
+      "files": [
+        "kandinsky6/quantization.py",
+        "kandinsky6/supported_model.py",
+        "kandinsky6/model_base.py",
+        "tests/test_quantization.py"
+      ]
+    },
+    {
+      "round": 10,
+      "topic": "FP32 native operations and real LoRA lifecycle",
+      "reviewer": "Real native tiny MixedPrecision Linear via NativeAVDiT load preserves FP32 exactly. Real Comfy LoRA patch changes finite output, archive dtype/save reload match, unpatch exact; legacy cast fallback also exact.",
+      "root": "Current core APIs and native operations selection match supported0.39. No new changes required.",
+      "result": "pass"
+    },
+    {
+      "round": 11,
+      "topic": "Real published INT8 auxiliary checks and latent frame contract",
+      "reviewer": "Actual Lite920/LiteDistill920/ProDistill1728 marker+scale payloads pass with real/prefixed keys, weight headers only. WrongFP8 marker with scalar scale produces finite but wrong native output(maxabs194); frame and I2tail normalpaths pass.",
+      "root": "Required int8_tensorwise metadata for current INT8payloads. Nine metadata tests pass. Real LiteDistill native2step I2AV remains finite with reference error2.38e-7.",
+      "result": "fix",
+      "files": [
+        "kandinsky6/quantization.py",
+        "tests/test_quantization.py"
+      ]
+    },
+    {
+      "round": 12,
+      "topic": "PiFlow noise-mask semantics and explicit null conditioning",
+      "reviewer": "Actual sampler/EmptyLatent/stock SetLatentNoiseMask with controlled tiny rollout: allzero freeze mask is ignored; canonical I2 reference passes. ExplicitNone audio metadata raises None.device instead of native fallback; pooledNone enters GPU load.",
+      "root": "Pre-load reject unsupported mask semantics while accepting canonical clean reference tail. ExplicitNone audio values fall back like native adapter; pooledNone fails before model load. Six mask plus10 conditioning tests pass.",
+      "result": "fix",
+      "files": [
+        "kandinsky6/piflow_latent.py",
+        "kandinsky6/sampling.py",
+        "kandinsky6/piflow_conditioning.py",
+        "tests/test_piflow_latent.py",
+        "tests/test_piflow_conditioning.py"
+      ]
+    },
+    {
+      "round": 13,
+      "topic": "Native interrupt, pre-run and rollout cleanup",
+      "reviewer": "Actual Comfy InterruptProcessingException (BaseException) and RuntimeError injected into pre_run/rollout: both cleanup paths execute, original exception identity preserved. Pre-load failures mirror official guider lifecycle. Core prefetch cleanup does not throw interrupt.",
+      "root": "No confirmed new bug or unsupported hook promise. Extra cleanup BaseException defense remains a nonblocking suggestion.",
+      "result": "pass"
+    },
+    {
+      "round": 14,
+      "topic": "Real ModelPatcher clone and MagCache CFG lanes",
+      "reviewer": "Real shared controller under serial clone pre_run/cleanup: steps1/4 and retention0/.95, two generations, separate/reversed combinedCFG lanes yield exact independent residuals and no cleanup leftovers. Distill bypass and Lite rejection pass.",
+      "root": "No supported single-queue regression. ConcurrentmultiGPU behavior is not advertised; no ordinaryPro downloaded.",
+      "result": "pass"
+    },
+    {
+      "round": 15,
+      "topic": "Independent native rejection hooks and CUDA scale broadcasting",
+      "reviewer": "Actual NativeAVDiT.load rejectsNaN beforeweight install; supported_model.get_model rejects beforeconstruction. Real sampler/stockmask rejects arbitrarymask andpooledNone preGPU, nullaudiofallback/canonicaltail pass. ConvRot64/256 CUDA scalar()/[1]/[1,1]/rows scales finite, matchrowrepeats exact andeager within7.63e-6.",
+      "root": "Confirmed new validation wiring without narrowing legitimate scalar support. No new fix needed.",
+      "result": "pass"
+    },
+    {
+      "round": 16,
+      "topic": "Actual separate TOD/BigVGAN decoder and official audio node",
+      "reviewer": "Existing real TOD+BigVGAN weights: canonical17frames24fps decode31238samples peak1.0, stockVAEDecodeAudio31744samples, allfinite44.1kHz. Before/afterI2tail removal exactsamewaveform; patcher tracked/allFP32. Controlledshort/NaNoutputs rejected.",
+      "root": "Independent decode completed9.062s withoutTE/DiT/newdownloads. No new fix.",
+      "result": "pass"
+    },
+    {
+      "round": 17,
+      "topic": "Example installation failure isolation and physical source aliases",
+      "reviewer": "Actual tiny inputcopy OSError followed byunlink PermissionError escapes __init__ and prevents pluginimport. Isolated officialminimumfilelock3.13.1 Windows wheel (notinstalled) realhardlinksource/lock truncates88byte source to0; current3.32.3 doesnottruncate but cannotreadlockedalias.",
+      "root": "Catch and log partial removal failure without blocking registration. Check source.samefile across fixedoutput/lock/manifest aliases before lock acquisition;14 conversion tests and2 example installation regressions pass.",
+      "result": "fix",
+      "files": [
+        "example_inputs.py",
+        "tools/convert_int8.py",
+        "tests/test_example_inputs.py",
+        "tests/test_int8_conversion.py"
+      ]
+    },
+    {
+      "round": 18,
+      "topic": "Four generated workflow schemas and bilingual user instructions",
+      "reviewer": "AllfourGUI/API graphs regenerateexactly in memory;72 real object_info links agree. Fixedseed/dynamicMP4H264auto/fps/reference removal correct. BothREADME switches/all7social URLs exact. BaseNote ambiguously directs toordinaryPro orProDistill in stockKSampler.",
+      "root": "Regenerated only GUI notes with explicitBaseLite/PiFlowLiteDistillorProDistill scope. Downloader UI links to ready INT8models; localconversion described asoptional. Defaults/APIgraphs unchanged.",
+      "result": "fix",
+      "files": [
+        "tools/build_workflows.py",
+        "example_workflows",
+        "web/downloads.js"
+      ]
+    },
+    {
+      "round": 19,
+      "topic": "Independent complete regression and package contents",
+      "reviewer": "77pytestpassed/no skipped in3.91s;Node1suite/1testpassed. RuffFpass excludingtwoexistingvendoredexportfiles(4existingF401/F403diagnostics). All3 physicalsourcealias cases rejectbeforeFileLock,88bytes preserved. Copy+cleanupfailure isolated/userfilepreserved. Four regeneratedgraphs match;72realconnectionscorrect.58Pythonfiles/45runtime Python3.10ASTpass,10dependenciesequal,80 requiredruntimeassets included.",
+      "root": "No further code changes needed. Prepared0.1.2 version and actual19-round audit for final independentround20; HFbilingualcard3ce9c8e7 readback exact/all9modelblobs unchanged.",
+      "result": "pass"
+    },
+    {
+      "round": 20,
+      "topic": "Final independent audit, release metadata and unchanged model verification",
+      "reviewer": "Actual rounds1–19audit matches independently reported proofs. Version0.1.2/dependencies/scope correct. Firstaudit/MODEL_SOURCES/APIgraphs unchanged;GUI onlyNote changes andexactregeneration.18focusedregressions pass. Requirednewruntime/packagefiles included. IndependentHFbefore/after9files size/blob/LFS unchanged andcards exact. No newbug/publicationblocker.",
+      "root": "Completedactualsecond20-roundaudit. Final nativeLiteDistill2-stepI2AV withnewmaskvalidation finite/reference2.38e-7; freshserver verifiesall6componentsreused withno downloads. Proceeding to GitHub and officialRegistry then freshartifactreadback.",
+      "result": "pass"
+    }
+  ],
+  "ordinary_pro_downloaded_in_this_review": false
+}

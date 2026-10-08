@@ -5,7 +5,7 @@
 | 检查 | 当前结果 |
 |---|---|
 | Kitchen ConvRot 64 / 256 CUDA kernels | 通过，真实量化、反量化与 Linear |
-| 转换测试 | 4 通过 |
+| 转换测试 | 14 通过，含并发提交、manifest 回滚及源文件别名保护 |
 | 新工具 lint / Python 编译 | 通过 |
 | Lite 单文件转换 | 4,868,860,174 bytes，920 INT8 layers；全部保留张量原始字节通过 |
 | Lite distill 单文件转换 | 3,773,931,918 bytes，920 INT8 layers；全部保留张量原始字节通过 |
@@ -41,6 +41,12 @@
 2026-10-08，`0.1.1` 完成另一组实际 20 轮子 Agent 交叉检查，逐轮结论保存在 [evidence/crosscheck_20.json](evidence/crosscheck_20.json)。修复 10 类问题：工作流下载按钮、损坏组件复用、错误哈希 partial 的重试、移除队列后的等待、完整 AV checkpoint 结构检查、临时路径覆盖源文件、PiFlow 条件元数据、异常清理、AV 交叉注意力选项传递，以及中断后的 MagCache 生命周期。
 
 新增针对性回归与原有转换测试合计 **43 项通过**；前端按钮绑定及 NDJSON 断流测试通过。真实原生检测器验证三份源模型与三份 INT8 模型均兼容；Lite KSampler 与 Lite 蒸馏 PiFlow 另外重跑 `256×256 / 17 帧 / 2 steps` I2AV，两路输出均为有限值，参考最大误差分别为 `9.54e-7 / 2.38e-7`。可选 MagCache 生命周期使用真实 CPU ModelPatcher 验证；未为此下载普通 Pro。本次没有重新量化或修改三份已发布权重，也未重复此前六条默认尺寸完整媒体运行。
+
+`0.1.2` 完成新一组实际 20 轮交叉检查，记录位于 [evidence/crosscheck_second_20.json](evidence/crosscheck_second_20.json)。修复模型目录优先级、下载取消及文件移走的竞争、超长断点与重复下载参数、转换并发与失败回滚、INT8 参数完整性、PiFlow 遮罩与空音频条件，以及示例输入清理失败和转换源硬链接保护；工作流备注明确三个交付模型，下载入口指向已发布 INT8。
+
+完整回归 **77 项通过，无跳过**；前端测试、四套模板的 72 条原生连线及 Python 3.10 AST 检查通过。主项目 Ruff F 检查通过，排除两个既有 vendor 导出文件中的四条 F401/F403 诊断。三份已发布 INT8 的全部 marker/scale 实值通过校验；另用真实原生 Linear、LoRA、ModelPatcher 和 TOD/BigVGAN 音频解码复核，标准音频节点和专用时长裁剪均正常。三份 DiT 和六个独立组件保持不变，未重新量化，也未重跑此前六条默认尺寸完整媒体。
+
+最终源码再次跑通 Lite 蒸馏 `256×256 / 17 帧 / 2 steps` 原生 I2AV，视频、音频均有限，参考误差 `2.38e-7`；重启实际服务器后，六个组件经 SHA-256 校验全部复用，没有新下载。
 
 回归命令（使用已安装依赖的 Python；CUDA 检查需要实际 CUDA 环境）：
 

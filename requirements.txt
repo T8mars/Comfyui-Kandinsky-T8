@@ -1,5 +1,6 @@
 einops>=0.8.0
 comfy-kitchen>=0.2.37
+filelock>=3.13.1
 huggingface-hub>=0.36.0
 librosa>=0.10.2
 loguru>=0.7.0

@@ -30,3 +30,5 @@ def test_multiple_conditions_and_missing_pooled_are_rejected():
         module.joint_conditioning([[object(), {}], [object(), {}]])
     with pytest.raises(ValueError, match="pooled"):
         module.joint_conditioning([[object(), {}]])
+    with pytest.raises(ValueError, match="pooled"):
+        module.joint_conditioning([[object(), {"pooled_output": None}]])

@@ -6,6 +6,7 @@ import comfy.latent_formats
 
 from . import model_base as k6_model_base
 from .core_contract import SCHEDULER_DEFAULTS
+from .quantization import validate_int8_state_dict
 
 
 class Kandinsky6(comfy.supported_models.Kandinsky5):
@@ -25,6 +26,7 @@ class Kandinsky6(comfy.supported_models.Kandinsky5):
     text_encoder_key_prefix = ["text_encoders."]
 
     def get_model(self, state_dict, prefix="", device=None):
+        validate_int8_state_dict(state_dict, prefix)
         return k6_model_base.Kandinsky6(self, device=device)
 
     # clip_target() inherited from Kandinsky5 -> Qwen2.5-7B + CLIP-L

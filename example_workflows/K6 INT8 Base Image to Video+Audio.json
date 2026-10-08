@@ -784,7 +784,7 @@
         "kandinsky6_download_package": "kandinsky6"
       },
       "widgets_values": [
-        "# K6 INT8 Base Image to Video+Audio\nComfyUI 0.39+ with comfy-kitchen 0.2.37+. Place the converted single-file DiT in diffusion_models. The download button supplies independent TE/VAE/audio components. Convert the DiT with tools/convert_int8.py.\n\nStock KSampler: 50 steps, CFG=5, Euler/simple, audio scale=0.5302, flow shift=5.\n\n864\u00d7480, 121 frames at 24 fps. Change the UNET filename to the matching Pro variant to use Pro."
+        "# K6 INT8 Base Image to Video+Audio\nComfyUI 0.39+ with comfy-kitchen 0.2.37+. Download a ready INT8 DiT from [Kandinsky-Comfy](https://huggingface.co/t8star/Kandinsky-Comfy) into diffusion_models. The download button supplies independent TE/VAE/audio components. Optional conversion: tools/convert_int8.py.\n\nStock KSampler: 50 steps, CFG=5, Euler/simple, audio scale=0.5302, flow shift=5.\n\n864\u00d7480, 121 frames at 24 fps. Use Lite for Base; use the PiFlow examples for Lite distill or Pro distill."
       ]
     }
   ],

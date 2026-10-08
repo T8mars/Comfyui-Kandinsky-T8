@@ -46,8 +46,13 @@ export function registerDownloadUI(packageId, displayName) {
         heading.textContent = displayName + " — Download models";
         const description = document.createElement("p");
         description.textContent = "Downloads independent text encoders, video VAE and audio components for the INT8 workflows. "
-            + "Convert the DiT separately with tools/convert_int8.py. Existing component files are reused. "
+            + "Get a ready-to-use INT8 DiT from the model repository below. Existing components are verified before reuse. "
             + "Downloads start when you press Download.";
+        const models = document.createElement("a");
+        models.textContent = "Download INT8 DiT models";
+        models.href = "https://huggingface.co/t8star/Kandinsky-Comfy";
+        models.target = "_blank";
+        models.rel = "noopener noreferrer";
         const status = document.createElement("pre");
         Object.assign(status.style, { whiteSpace: "pre-wrap", overflowWrap: "anywhere" });
         status.textContent = "Checking local models…";
@@ -61,7 +66,7 @@ export function registerDownloadUI(packageId, displayName) {
         let busy = false;
         dialog.addEventListener("cancel", (event) => { if (busy) event.preventDefault(); });
         dialog.addEventListener("close", () => dialog.remove());
-        dialog.append(heading, description, status, download, close);
+        dialog.append(heading, description, models, status, download, close);
         document.body.append(dialog);
         dialog.showModal();
         try {

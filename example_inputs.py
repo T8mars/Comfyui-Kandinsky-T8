@@ -49,7 +49,10 @@ def install_example_inputs(input_directory: str | Path | None = None) -> tuple[P
             continue
         except OSError as error:  # pragma: no cover - filesystem-specific failure
             if target_was_created:
-                target.unlink(missing_ok=True)
+                try:
+                    target.unlink(missing_ok=True)
+                except OSError as cleanup_error:
+                    LOGGER.warning("Unable to remove incomplete example input %s: %s", target, cleanup_error)
             LOGGER.warning("Unable to install example input %s: %s", source.name, error)
             continue
         installed.append(target)

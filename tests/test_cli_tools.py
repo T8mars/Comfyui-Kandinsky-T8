@@ -1,5 +1,6 @@
 """CLI regressions reproduce damaged partials and cancelled queue entries."""
 import hashlib
+from http.client import IncompleteRead
 import importlib.util
 import io
 import json
@@ -83,3 +84,51 @@ def test_removed_prompt_exits_and_completion_race_is_preserved(tmp_path, monkeyp
     result = json.loads(receipt.read_text())
     assert result["history"]["status"]["status_str"] == ("success" if finish_race else "cancelled")
     assert sum(url.endswith("/queue") for url in checks) == 3
+
+
+def test_oversized_response_and_preexisting_partial_can_recover(tmp_path, monkeypatch):
+    downloader = module("download_models")
+    item = {"destination": "test.bin", "size": 4, "sha256": hashlib.sha256(b"GOOD").hexdigest(),
+            "repo": "test/model", "revision": "a" * 40, "filename": "test.bin"}
+    monkeypatch.setattr(downloader.urllib.request, "urlopen", lambda request, timeout: io.BytesIO(b"TOOLONG"))
+    with pytest.raises(ValueError, match="exceeded"):
+        downloader.download(item, tmp_path)
+    assert not (tmp_path / "test.bin").exists()
+    assert (tmp_path / "test.bin.part").stat().st_size == 0
+    # Also exercise oversized partials left by older versions.
+    (tmp_path / "test.bin.part").write_bytes(b"TOOLONG")
+    monkeypatch.setattr(downloader.urllib.request, "urlopen", lambda request, timeout: io.BytesIO(b"GOOD"))
+    downloader.download(item, tmp_path)
+    assert (tmp_path / "test.bin").read_bytes() == b"GOOD"
+
+
+def test_incomplete_chunked_response_uses_existing_retry_policy(tmp_path, monkeypatch):
+    downloader = module("download_models")
+    item = {"destination": "test.bin", "size": 4, "sha256": hashlib.sha256(b"GOOD").hexdigest(),
+            "repo": "test/model", "revision": "a" * 40, "filename": "test.bin"}
+    calls = []
+
+    class Broken(io.BytesIO):
+        def read(self, size):
+            raise IncompleteRead(b"GO", 2)
+
+    def fetch(request, timeout):
+        calls.append(request)
+        return Broken() if len(calls) == 1 else io.BytesIO(b"GOOD")
+
+    monkeypatch.setattr(downloader.urllib.request, "urlopen", fetch)
+    monkeypatch.setattr(downloader.time, "sleep", lambda seconds: None)
+    downloader.download(item, tmp_path)
+    assert len(calls) == 2 and (tmp_path / "test.bin").read_bytes() == b"GOOD"
+
+
+def test_duplicate_variant_is_downloaded_once(tmp_path, monkeypatch):
+    downloader = module("download_models")
+    calls = []
+    item = {"destination": "sources/lite.safetensors"}
+    monkeypatch.setattr(downloader, "describe", lambda *args: item)
+    monkeypatch.setattr(downloader, "download", lambda value, root: calls.append(value) or value)
+    monkeypatch.setattr(sys, "argv", ["download_models", "--models", str(tmp_path), "--variants", "lite", "lite", "--workers", "2"])
+    downloader.main()
+    assert calls == [item]
+    assert json.loads((tmp_path / "download_receipts.json").read_text()) == [item]

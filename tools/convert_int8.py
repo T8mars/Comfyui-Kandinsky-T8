@@ -12,11 +12,13 @@ import sys
 import tempfile
 import time
 from collections import Counter
+from contextlib import contextmanager
 from pathlib import Path
 
 import torch
 from comfy_kitchen.tensor import TensorWiseINT8Layout
 from safetensors import safe_open
+from filelock import FileLock, Timeout
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from kandinsky6.checkpoint import native_key, validate_released_shapes
@@ -180,7 +182,72 @@ def tensor_bytes(tensor):
     return tensor.detach().cpu().contiguous().reshape(-1).view(torch.uint8).numpy().tobytes()
 
 
+@contextmanager
+def conversion_workspace(destination):
+    workspace = Path(tempfile.mkdtemp(prefix=destination.name + ".", dir=destination.parent))
+    try:
+        yield workspace
+    finally:
+        if (workspace / "previous.safetensors").exists():
+            print(f"Previous checkpoint retained for recovery: {workspace}", file=sys.stderr)
+        elif workspace.resolve().is_relative_to(destination.parent.resolve()):
+            shutil.rmtree(workspace)
+
+
+def commit_checkpoint(temporary, destination, manifest, overwrite):
+    """Prewrite the receipt and roll back weights if its publication fails."""
+    receipt = destination.with_suffix(destination.suffix + ".manifest.json")
+    staged_receipt = temporary.with_suffix(".manifest.json")
+    with staged_receipt.open("w", encoding="utf-8") as stream:
+        stream.write(json.dumps(manifest, indent=2) + "\n")
+        stream.flush()
+        os.fsync(stream.fileno())
+    if destination.exists() and not overwrite:
+        raise FileExistsError(destination)
+    backup = temporary.parent / "previous.safetensors"
+    if destination.exists():
+        os.replace(destination, backup)
+    installed = False
+    try:
+        os.replace(temporary, destination)
+        installed = True
+        os.replace(staged_receipt, receipt)
+    except BaseException:
+        try:
+            if backup.exists():
+                os.replace(backup, destination)
+            elif installed:
+                destination.unlink(missing_ok=True)
+        except OSError as error:
+            raise RuntimeError(f"Checkpoint rollback failed; recovery files retained in {temporary.parent}") from error
+        raise
+    if backup.exists():
+        try:
+            backup.unlink()
+        except OSError:
+            print(f"Committed checkpoint; previous file retained at {backup}", file=sys.stderr)
+
+
 def convert(source, destination, rows=256, device="cuda", excluded=(), overwrite=False):
+    if type(rows) is not int or rows < 1:
+        raise ValueError("rows must be a positive integer")
+    source, destination = Path(source).resolve(), Path(destination).resolve()
+    lock_path = Path(str(destination) + ".convert.lock")
+    receipt_path = destination.with_suffix(destination.suffix + ".manifest.json")
+    auxiliary_paths = (destination, lock_path.resolve(), receipt_path.resolve())
+    if any(source == path or (source.exists() and path.exists() and source.samefile(path)) for path in auxiliary_paths):
+        raise ValueError("Source must differ from the checkpoint, manifest and conversion lock destinations")
+    if destination.exists() and not overwrite:
+        raise FileExistsError(destination)
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    try:
+        with FileLock(lock_path, timeout=0):
+            return _convert_locked(source, destination, rows, device, excluded, overwrite)
+    except Timeout as error:
+        raise RuntimeError(f"A conversion is already running for {destination}") from error
+
+
+def _convert_locked(source, destination, rows=256, device="cuda", excluded=(), overwrite=False):
     if type(rows) is not int or rows < 1:
         raise ValueError("rows must be a positive integer")
     source, destination = Path(source).resolve(), Path(destination).resolve()
@@ -208,7 +275,7 @@ def convert(source, destination, rows=256, device="cuda", excluded=(), overwrite
     destination.parent.mkdir(parents=True, exist_ok=True)
     if shutil.disk_usage(destination.parent).free < data_start + payload_size + (1 << 30):
         raise OSError("Not enough free space for the converted checkpoint")
-    with tempfile.TemporaryDirectory(prefix=destination.name + ".", dir=destination.parent) as workspace:
+    with conversion_workspace(destination) as workspace:
         temporary = Path(workspace) / "checkpoint.tmp"
         passthrough, metrics = {}, []
         started = time.monotonic()
@@ -271,15 +338,14 @@ def convert(source, destination, rows=256, device="cuda", excluded=(), overwrite
             os.fsync(output.fileno())
         verify(str(temporary), plan, schema, passthrough)
         output_sha = file_hash(temporary)
-        os.replace(temporary, destination)
-    manifest = {"recipe": RECIPE, "source": str(source), "source_sha256": source_sha,
+        manifest = {"recipe": RECIPE, "source": str(source), "source_sha256": source_sha,
                 "output": str(destination), "output_sha256": output_sha,
-                "output_bytes": destination.stat().st_size, "kitchen_version": metadata["k6_kitchen_version"],
+                "output_bytes": temporary.stat().st_size, "kitchen_version": metadata["k6_kitchen_version"],
                 "quantized_layers": len(metrics), "groups": dict(Counter(item["group"] for item in metrics)),
                 "elapsed_seconds": time.monotonic() - started, "tensors": plan,
                 "sample_weight_metrics": metrics, "passthrough_sha256": passthrough,
                 "verification": "schema, scales, markers, all passthrough tensor bytes verified"}
-    destination.with_suffix(destination.suffix + ".manifest.json").write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
+        commit_checkpoint(temporary, destination, manifest, overwrite)
     print(f"VERIFIED {destination} bytes={manifest['output_bytes']} layers={len(metrics)} sha256={output_sha}", flush=True)
     return manifest
 
