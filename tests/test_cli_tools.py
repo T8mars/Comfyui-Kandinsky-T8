@@ -6,6 +6,8 @@ import io
 import json
 from pathlib import Path
 import sys
+import concurrent.futures
+import threading
 
 import pytest
 
@@ -132,3 +134,91 @@ def test_duplicate_variant_is_downloaded_once(tmp_path, monkeypatch):
     downloader.main()
     assert calls == [item]
     assert json.loads((tmp_path / "download_receipts.json").read_text()) == [item]
+
+
+def download_item():
+    return {"destination": "test.bin", "size": 4, "sha256": hashlib.sha256(b"GOOD").hexdigest(),
+            "repo": "test/model", "revision": "a" * 40, "filename": "test.bin"}
+
+
+def test_independent_downloads_cannot_share_partial_writer(tmp_path, monkeypatch):
+    downloader = module("download_models")
+    ready, release = threading.Event(), threading.Event()
+    digest = downloader.digest
+
+    def pause_verified_partial(path):
+        result = digest(path)
+        if path.suffix == ".part":
+            ready.set()
+            assert release.wait(5)
+        return result
+
+    monkeypatch.setattr(downloader, "digest", pause_verified_partial)
+    monkeypatch.setattr(downloader.urllib.request, "urlopen", lambda request, timeout: io.BytesIO(b"GOOD"))
+    with concurrent.futures.ThreadPoolExecutor(max_workers=2) as pool:
+        first = pool.submit(downloader.download, download_item(), tmp_path)
+        try:
+            assert ready.wait(3)
+            with pytest.raises(RuntimeError, match="already running"):
+                downloader.download(download_item(), tmp_path)
+        finally:
+            release.set()
+        receipt = first.result()
+    assert digest(tmp_path / "test.bin") == receipt["actual_sha256"] == download_item()["sha256"]
+
+
+def test_download_final_install_cannot_replace_external_file(tmp_path, monkeypatch):
+    downloader = module("download_models")
+    target = tmp_path / "test.bin"
+    operation = "rename" if downloader.os.name == "nt" else "link"
+    install = getattr(downloader.os, operation)
+
+    def create_before_install(temporary, destination):
+        if Path(destination) == target:
+            thread = threading.Thread(target=lambda: target.write_bytes(b"USER"))
+            thread.start()
+            thread.join(5)
+            assert not thread.is_alive()
+        return install(temporary, destination)
+
+    monkeypatch.setattr(downloader.os, operation, create_before_install)
+    monkeypatch.setattr(downloader.urllib.request, "urlopen", lambda request, timeout: io.BytesIO(b"GOOD"))
+    with pytest.raises(FileExistsError):
+        downloader.download(download_item(), tmp_path)
+    assert target.read_bytes() == b"USER"
+    assert (tmp_path / "test.bin.part").read_bytes() == b"GOOD"
+    assert not (tmp_path / "test.bin.download.json").exists()
+
+
+def test_failed_receipt_publication_preserves_previous_complete_json(tmp_path, monkeypatch):
+    downloader = module("download_models")
+    target, receipt = tmp_path / "test.bin", tmp_path / "test.bin.download.json"
+    target.write_bytes(b"GOOD")
+    receipt.write_text('{"previous":true}\n')
+    before = receipt.read_bytes()
+    replace = downloader.os.replace
+
+    def deny_receipt(source, destination):
+        if Path(destination) == receipt:
+            raise PermissionError("receipt publication denied")
+        return replace(source, destination)
+
+    monkeypatch.setattr(downloader.os, "replace", deny_receipt)
+    with pytest.raises(PermissionError, match="receipt publication denied"):
+        downloader.download(download_item(), tmp_path)
+    assert receipt.read_bytes() == before and target.read_bytes() == b"GOOD"
+    assert not list(tmp_path.glob("*.tmp"))
+
+
+@pytest.mark.parametrize("suffix", ["", ".part", ".download.json"])
+def test_download_lock_cannot_alias_existing_artifacts(tmp_path, suffix):
+    downloader = module("download_models")
+    target = tmp_path / "test.bin"
+    artifact = Path(str(target) + suffix)
+    artifact.write_bytes(b"GOOD")
+    lock = Path(str(target) + ".download.lock")
+    lock.hardlink_to(artifact)
+    before = artifact.read_bytes()
+    with pytest.raises(ValueError, match="Download lock must differ"):
+        downloader.download(download_item(), tmp_path)
+    assert artifact.read_bytes() == before and lock.read_bytes() == before

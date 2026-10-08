@@ -170,7 +170,7 @@ def register_routes(routes, package_id, workflows, models_root, extra_roots):
             raise web.HTTPBadRequest(text="Explicit JSON confirmation is required.")
         try:
             payload = await request.json()
-        except json.JSONDecodeError as error:
+        except (json.JSONDecodeError, UnicodeError, LookupError) as error:
             raise web.HTTPBadRequest(text="Invalid JSON confirmation.") from error
         if payload != {"confirm": True}:
             raise web.HTTPBadRequest(text="Explicit download confirmation is required.")

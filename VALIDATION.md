@@ -54,3 +54,9 @@
 python -m pytest --import-mode=importlib --confcutdir=tests tests -q
 node tests/test_downloads.mjs
 ```
+
+`0.1.3` 的新一组交叉检查记录见 [evidence/crosscheck_third_20.json](evidence/crosscheck_third_20.json)。修复转换和下载的原子禁止覆盖、并发断点损坏、回执提交及外部文件回滚保护、最低版本锁文件别名截断、临时目录清理异常，以及 INT8 单值 scale、存储 dtype 和旋转标记校验。错误编码的下载确认请求返回 400；Hugging Face 双语下载示例改用七个明确文件参数，兼容最低与当前 CLI。
+
+完整回归 **109 项通过，无跳过**。原生快速 Linear、模型保存重载、LoRA、FP32 参数归档、预取中断清理和音频接口检查通过；PiFlow 的 1/2/10 步数学结果与固定上游一致。四套 GUI/API 模板的 72 条连线有效，前端下载状态与按钮检查通过。最低 `filelock 3.13.1` 下的模型、断点与回执硬链接保护已独立复验。转换回滚先原子捕获目标文件，再检查身份并禁止覆盖地恢复；Windows rename 与 POSIX hard-link 分支共 12 个真实小文件竞争场景通过复验。
+
+最新源码重跑 Lite 蒸馏原生 I2AV：`256×256 / 17 帧 / 2 steps`，视频、音频潜变量均有限，参考帧误差 `2.38e-7`，采样耗时 `24.219` 秒。重新启动服务器后，六个组件经 SHA-256 校验全部复用，没有新下载。Hugging Face 仅更新两份模型卡；三份 DiT 与六个独立组件保持不变。本轮未重新量化或重复六条默认尺寸完整媒体运行。

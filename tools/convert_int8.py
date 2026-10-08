@@ -188,10 +188,21 @@ def conversion_workspace(destination):
     try:
         yield workspace
     finally:
-        if (workspace / "previous.safetensors").exists():
-            print(f"Previous checkpoint retained for recovery: {workspace}", file=sys.stderr)
+        if any((workspace / name).exists() for name in ("previous.safetensors", "rollback.safetensors")):
+            print(f"Checkpoint files retained for recovery: {workspace}", file=sys.stderr)
         elif workspace.resolve().is_relative_to(destination.parent.resolve()):
-            shutil.rmtree(workspace)
+            try:
+                shutil.rmtree(workspace)
+            except OSError as error:
+                print(f"Could not remove conversion workspace {workspace}: {error}", file=sys.stderr)
+
+
+def install_without_overwrite(source, destination):
+    """Publish atomically without replacing a concurrently created target."""
+    if os.name == "nt":
+        os.rename(source, destination)
+    else:
+        os.link(source, destination)
 
 
 def commit_checkpoint(temporary, destination, manifest, overwrite):
@@ -204,20 +215,48 @@ def commit_checkpoint(temporary, destination, manifest, overwrite):
         os.fsync(stream.fileno())
     if destination.exists() and not overwrite:
         raise FileExistsError(destination)
+    original_stat = temporary.stat()
+    installed_identity = (original_stat.st_dev, original_stat.st_ino, original_stat.st_size, original_stat.st_mtime_ns)
     backup = temporary.parent / "previous.safetensors"
-    if destination.exists():
+    if overwrite and destination.exists():
         os.replace(destination, backup)
     installed = False
     try:
-        os.replace(temporary, destination)
+        if overwrite:
+            os.replace(temporary, destination)
+        else:
+            install_without_overwrite(temporary, destination)
         installed = True
         os.replace(staged_receipt, receipt)
     except BaseException:
         try:
-            if backup.exists():
-                os.replace(backup, destination)
-            elif installed:
-                destination.unlink(missing_ok=True)
+            if installed or backup.exists():
+                quarantine = temporary.parent / "rollback.safetensors"
+                try:
+                    # Inspect the file actually captured, never a public-path
+                    # stat followed by a destructive unlink or replacement.
+                    os.replace(destination, quarantine)
+                except FileNotFoundError:
+                    captured = None
+                else:
+                    captured = quarantine.stat()
+                identity = None if captured is None else (captured.st_dev, captured.st_ino, captured.st_size, captured.st_mtime_ns)
+                if captured is not None and identity != installed_identity:
+                    try:
+                        install_without_overwrite(quarantine, destination)
+                    except FileExistsError:
+                        pass  # Keep both external files and any backup for recovery.
+                    print(f"Rollback preserved an external checkpoint; recovery directory: {temporary.parent}", file=sys.stderr)
+                else:
+                    if backup.exists():
+                        try:
+                            install_without_overwrite(backup, destination)
+                        except FileExistsError:
+                            print(f"Rollback target changed; checkpoint files retained at {temporary.parent}", file=sys.stderr)
+                        else:
+                            backup.unlink(missing_ok=True)
+                    if not backup.exists():
+                        quarantine.unlink(missing_ok=True)
         except OSError as error:
             raise RuntimeError(f"Checkpoint rollback failed; recovery files retained in {temporary.parent}") from error
         raise

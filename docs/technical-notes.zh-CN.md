@@ -40,7 +40,9 @@ ComfyUI/models/
 
 ### 下载与转换
 
-在本包目录中执行，将 `$modelsRoot` 改为实际模型目录。下载器固定模型 revision，支持断点续传，核对文件长度和 LFS SHA-256，保存下载回执。原始权重留在 `sources`，不会自动启动下载。
+可直接从 [t8star/Kandinsky-Comfy](https://huggingface.co/t8star/Kandinsky-Comfy) 下载已转换的单文件 INT8 DiT，放入 `diffusion_models`。工作流的 **Download models** 按钮下载独立 TE/VAE/音频组件，复用前核对 SHA-256，并提供 DiT 仓库链接。
+
+需要自行转换时，在本包目录执行下面的可选命令，将 `$modelsRoot` 改为实际模型目录。下载器固定 revision，支持断点续传，核对文件长度和 LFS SHA-256，并原子保存下载回执。每个目标文件单独加锁，拒绝并发写入和覆盖已存在的不匹配模型；原始权重留在 `sources`。
 
 ```powershell
 $modelsRoot = 'D:\kandinsky-6\models'
@@ -50,7 +52,7 @@ python tools/convert_int8.py "$modelsRoot\sources\lite-distill.safetensors" "$mo
 python tools/convert_int8.py "$modelsRoot\sources\pro-distill.safetensors" "$modelsRoot\diffusion_models\k6_pro_distill_int8_convrot.safetensors"
 ```
 
-界面的 Download models 按钮只提供工作流所需的独立 TE/VAE/音频组件；DiT 需运行转换器。Pro 普通版属于 Hugging Face gated 仓库，需要账号获得模型访问权；下载授权不等于仓库访问权。当前 CLI 下载器针对公共文件；获得 Pro 普通版访问权后，可通过已登录的 Hugging Face 下载工具取得原始权重，再运行本包转换器。
+本次交付仅包含 Lite、Lite 蒸馏版和 Pro 蒸馏版。
 
 ### 量化范围
 
@@ -58,7 +60,7 @@ python tools/convert_int8.py "$modelsRoot\sources\pro-distill.safetensors" "$mod
 - K 维可整除时依次选择 256、64、16 分组；Lite 的 896 维音频分支使用 64。完整 Lite 有 920 个候选 Linear，完整 Pro 有 1728 个。
 - 覆盖视频、音频和内部文本块的 attention Q/K/V/output 与 FFN in/out。保留时间嵌入、modulation、输入投影、最终输出头、norm、bias 和 token embeddings 的原始 dtype 与字节。
 - 每层采用原生 `.weight` / `.weight_scale` / `.comfy_quant` schema；所有分支写入一个 safetensors，未拆分 DiT，未删除音频权重。
-- 转换按行分块，先写临时文件，回读验证形状、dtype、旋转标记、正有限 scale，以及所有保留张量的原始字节，然后原子替换目标文件。完整 SHA-256 和层级记录写入相邻 `.manifest.json`。
+- 转换按行分块，先写临时文件，回读验证形状、dtype、旋转标记、正有限 scale，以及所有保留张量的原始字节，再原子提交目标文件。完整 SHA-256 和层级记录写入相邻 `.manifest.json`。默认拒绝覆盖，显式 `--overwrite` 才替换旧文件；清单提交失败时执行回滚，并保护外部已更新的文件。
 - 默认采用确定性 absmax；不启用 MSE clipping。`--exclude-layer native.layer.weight` 可将指定层保留原始精度。`--dry-run` 只检查结构和输出预算。已有输出默认拒绝覆盖。
 
 实际 Lite 普通版文件约 **4.87 GB**，Lite 蒸馏版约 **3.77 GB**，Pro 蒸馏版约 **34.97 GB**。24 GB 显卡加载 Pro 需要 Comfy 的卸载/动态显存能力，开发机器配有 64 GB RAM。文件大小并不等于峰值显存，视频激活、TE 和解码器还需要空间。
@@ -69,9 +71,8 @@ python tools/convert_int8.py "$modelsRoot\sources\pro-distill.safetensors" "$mod
 
 | 模型 | 采样器 | steps / CFG / denoise | 音频 scale |
 |---|---|---|---|
-| Lite / Pro 普通版 | 官方 KSampler，Euler / simple | 50 / 5 / 1 | 0.5302 |
-| Lite / Pro 蒸馏版 | Kandinsky6Sampler，PiFlow DX | 10 / 1 / 1 | 0.417 |
-| pretrain | 官方 KSampler | 50 / 5 / 1 | 0.417 |
+| Lite | 官方 KSampler，Euler / simple | 50 / 5 / 1 | 0.5302 |
+| Lite 蒸馏版 / Pro 蒸馏版 | Kandinsky6Sampler，PiFlow DX | 10 / 1 / 1 | 0.417 |
 
 UNETLoader 的 `weight_dtype` 使用 **default**。PiFlow 是专用多网格积分，节点里的 sampler/scheduler 下拉项对蒸馏模型不生效。普通模型继承原生 flow shift=5；PiFlow 采用官方 shift=5、10 网格、128 子步预算和最后一段 0.5 步长。
 
@@ -79,12 +80,12 @@ UNETLoader 的 `weight_dtype` 使用 **default**。PiFlow 是专用多网格积�
 
 正负提示词的不同 token 长度分别求值；禁止重复较短上下文，因为模型内部文本块使用 RoPE。支持 Comfy 官方分块替换和 attention 选项，但没有声称未经验证的 ControlNet、区域提示、任意 LATENT 图像节点或 PiFlow 的任意 scheduler 兼容。
 
-PiFlow 限制：CFG=1、denoise=1、单个联合条件；负提示不参与 CFG=1。支持中断与资源清理，遵循模型加载和 latent 缩放；专用 DX rollout 直接调用 DiT，不经过普通 KSampler 的全部 guider/hook 路径。MagCache 仅沿用官方普通 Pro 校准；基础工作流关闭缓存、compile 和额外注意力量化。
+PiFlow 限制：CFG=1、denoise=1、单个全局且完整时间范围的联合条件；负提示不参与 CFG=1。遮罩仅支持图生流程的干净参考尾帧。支持中断与资源清理，遵循模型加载和 latent 缩放；专用 DX rollout 直接调用 DiT，不经过普通 KSampler 的全部 guider/hook 路径。基础工作流关闭 MagCache、compile 和额外注意力量化。
 
 ## 验证
 
 ```powershell
-python -m pytest --confcutdir=tests -q
+python -m pytest --import-mode=importlib --confcutdir=tests tests -q
 python tools/run_workflow.py "example_workflows/api/K6 INT8 PiFlow Text to Video+Audio.json" --url http://127.0.0.1:8188 --receipt validation/run.json
 ```
 

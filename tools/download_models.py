@@ -6,11 +6,14 @@ from http.client import IncompleteRead
 import json
 import os
 import shutil
+import tempfile
 import time
 import urllib.error
 import urllib.parse
 import urllib.request
 from pathlib import Path
+
+from filelock import FileLock, Timeout
 
 VARIANTS = {
     "lite": ("Kandinsky-6.0-Lite-5s-Diffusers", "5686616f04318cbec7b0a4978b4ff1697395de15"),
@@ -56,8 +59,28 @@ def describe(repo, revision, filename, destination):
 
 
 def download(item, root):
-    destination = root / item["destination"]
+    root = Path(root).resolve()
+    destination = (root / item["destination"]).resolve()
     destination.parent.mkdir(parents=True, exist_ok=True)
+    lock_path = Path(str(destination) + ".download.lock")
+    artifacts = (destination, destination.with_suffix(destination.suffix + ".part"),
+                 destination.with_suffix(destination.suffix + ".download.json"))
+    if any(lock_path.resolve() == path.resolve() or (
+        lock_path.exists() and path.exists() and lock_path.samefile(path)
+    ) for path in artifacts):
+        raise ValueError("Download lock must differ from the model, partial and receipt files")
+    lock = FileLock(lock_path, timeout=0)
+    try:
+        lock.acquire()
+    except Timeout as error:
+        raise RuntimeError(f"A download is already running for {destination}") from error
+    try:
+        return _download_locked(item, root, destination)
+    finally:
+        lock.release()
+
+
+def _download_locked(item, root, destination):
     receipt_path = destination.with_suffix(destination.suffix + ".download.json")
     if destination.exists():
         actual = digest(destination)
@@ -114,10 +137,31 @@ def download(item, root):
             with partial.open("wb"):
                 pass
             raise ValueError(f"Downloaded file failed verification: {partial}")
-        os.replace(partial, destination)
+        if os.name == "nt":
+            os.rename(partial, destination)
+        else:
+            os.link(partial, destination)
+            try:
+                partial.unlink()
+            except OSError as error:
+                print(f"Downloaded model installed; partial retained at {partial}: {error}", flush=True)
         print(f"VERIFIED {item['destination']}", flush=True)
     receipt = {**item, "actual_sha256": actual}
-    receipt_path.write_text(json.dumps(receipt, indent=2) + "\n", encoding="utf-8")
+    temporary_receipt = None
+    try:
+        with tempfile.NamedTemporaryFile(mode="w", encoding="utf-8", dir=destination.parent,
+                                         prefix=receipt_path.name + ".", suffix=".tmp", delete=False) as stream:
+            temporary_receipt = Path(stream.name)
+            stream.write(json.dumps(receipt, indent=2) + "\n")
+            stream.flush()
+            os.fsync(stream.fileno())
+        os.replace(temporary_receipt, receipt_path)
+    finally:
+        if temporary_receipt is not None:
+            try:
+                temporary_receipt.unlink(missing_ok=True)
+            except OSError as error:
+                print(f"Could not remove download receipt temporary file {temporary_receipt}: {error}", flush=True)
     return receipt
 
 

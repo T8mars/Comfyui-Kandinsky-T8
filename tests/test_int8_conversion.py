@@ -170,3 +170,152 @@ def test_source_hardlink_cannot_be_used_as_conversion_lock(tmp_path):
     with pytest.raises(ValueError, match="Source must differ"):
         converter.convert(source, target)
     assert source.read_bytes() == before and not target.exists()
+
+
+def test_external_writer_cannot_be_overwritten_during_final_install(tmp_path, monkeypatch):
+    source, target = tmp_path / "source.safetensors", tmp_path / "output.safetensors"
+    save_file({"weight": torch.ones(2, 2)}, source)
+    monkeypatch.setattr(converter, "make_plan", tiny_plan)
+    operation = "rename" if converter.os.name == "nt" else "link"
+    install = getattr(converter.os, operation)
+    external_bytes = []
+
+    def create_before_install(temporary, destination):
+        if Path(destination) == target:
+            thread = threading.Thread(target=lambda: save_file({"weight": torch.full((2, 2), 99.)}, target))
+            thread.start()
+            thread.join(5)
+            assert not thread.is_alive()
+            external_bytes.append(target.read_bytes())
+        return install(temporary, destination)
+
+    monkeypatch.setattr(converter.os, operation, create_before_install)
+    with pytest.raises(FileExistsError):
+        converter.convert(source, target)
+    assert target.read_bytes() == external_bytes[0]
+    assert torch.equal(load_file(target)["weight"], torch.full((2, 2), 99.))
+    assert not target.with_suffix(".safetensors.manifest.json").exists()
+    assert not any(path.is_dir() for path in tmp_path.iterdir())
+
+
+@pytest.mark.parametrize("conversion_fails", [False, True])
+def test_workspace_cleanup_failure_preserves_conversion_result(tmp_path, monkeypatch, capsys, conversion_fails):
+    source, target = tmp_path / "source.safetensors", tmp_path / "output.safetensors"
+    save_file({"weight": torch.ones(2, 2)}, source)
+    monkeypatch.setattr(converter, "make_plan", tiny_plan)
+
+    def cleanup_denied(path):
+        raise PermissionError("cleanup denied")
+
+    monkeypatch.setattr(converter.shutil, "rmtree", cleanup_denied)
+    if conversion_fails:
+        def verify_failed(*args):
+            raise ValueError("original verification error")
+        monkeypatch.setattr(converter, "verify", verify_failed)
+        with pytest.raises(ValueError, match="original verification error"):
+            converter.convert(source, target)
+        assert not target.exists()
+    else:
+        manifest = converter.convert(source, target)
+        assert manifest["output_sha256"] == converter.file_hash(target)
+        assert json.loads(target.with_suffix(".safetensors.manifest.json").read_text())["output_sha256"] == manifest["output_sha256"]
+    assert "Could not remove conversion workspace" in capsys.readouterr().err
+    assert any(path.is_dir() for path in tmp_path.iterdir())
+
+
+@pytest.mark.parametrize("replace_inode", [False, True])
+@pytest.mark.parametrize("existing", [False, True])
+def test_failed_manifest_does_not_delete_external_checkpoint_update(tmp_path, monkeypatch, replace_inode, existing):
+    source, target = tmp_path / "source.safetensors", tmp_path / "output.safetensors"
+    external = tmp_path / "external.safetensors"
+    save_file({"weight": torch.ones(2, 2)}, source)
+    save_file({"weight": torch.full((2, 2), 99.)}, external)
+    external_bytes = external.read_bytes()
+    monkeypatch.setattr(converter, "make_plan", tiny_plan)
+    receipt = target.with_suffix(".safetensors.manifest.json")
+    if existing:
+        converter.convert(source, target)
+        old_weight, old_receipt = target.read_bytes(), receipt.read_bytes()
+    replace = converter.os.replace
+
+    def fail_receipt(temporary, destination):
+        if Path(destination) == receipt:
+            def update():
+                if replace_inode:
+                    replace(external, target)
+                else:
+                    target.write_bytes(external_bytes)
+            thread = threading.Thread(target=update)
+            thread.start()
+            thread.join(5)
+            assert not thread.is_alive()
+            raise PermissionError("receipt denied after external update")
+        return replace(temporary, destination)
+
+    monkeypatch.setattr(converter.os, "replace", fail_receipt)
+    with pytest.raises(PermissionError, match="receipt denied"):
+        converter.convert(source, target, overwrite=existing)
+    assert target.read_bytes() == external_bytes
+    if existing:
+        assert receipt.read_bytes() == old_receipt
+        backups = list(tmp_path.glob("output.safetensors.*/previous.safetensors"))
+        assert len(backups) == 1 and backups[0].read_bytes() == old_weight
+    else:
+        assert not receipt.exists()
+
+
+@pytest.mark.parametrize("existing", [False, True])
+def test_rollback_cannot_destroy_file_created_after_ownership_check(tmp_path, monkeypatch, existing):
+    source, target = tmp_path / "source.safetensors", tmp_path / "output.safetensors"
+    external = tmp_path / "external.safetensors"
+    save_file({"weight": torch.ones(2, 2)}, source)
+    save_file({"weight": torch.full((2, 2), 99.)}, external)
+    external_bytes = external.read_bytes()
+    monkeypatch.setattr(converter, "make_plan", tiny_plan)
+    receipt = target.with_suffix(".safetensors.manifest.json")
+    if existing:
+        converter.convert(source, target)
+        old_weight, old_receipt = target.read_bytes(), receipt.read_bytes()
+    replace, unlink = converter.os.replace, Path.unlink
+    publish = converter.install_without_overwrite
+    failed, changed = False, False
+
+    def external_update():
+        nonlocal changed
+        thread = threading.Thread(target=lambda: replace(external, target))
+        thread.start()
+        thread.join(5)
+        assert not thread.is_alive()
+        changed = True
+
+    def fail_receipt(temporary, destination):
+        nonlocal failed
+        if Path(destination) == receipt:
+            failed = True
+            raise PermissionError("receipt denied")
+        if failed and existing and Path(temporary).name == "previous.safetensors":
+            external_update()  # Regression against destructive old backup restore.
+        return replace(temporary, destination)
+
+    def race_restore(temporary, destination):
+        if failed and existing and Path(temporary).name == "previous.safetensors":
+            external_update()
+        return publish(temporary, destination)
+
+    def race_cleanup(path, *args, **kwargs):
+        if failed and not existing and (path == target or path.name == "rollback.safetensors"):
+            external_update()
+        return unlink(path, *args, **kwargs)
+
+    monkeypatch.setattr(converter.os, "replace", fail_receipt)
+    monkeypatch.setattr(converter, "install_without_overwrite", race_restore)
+    monkeypatch.setattr(Path, "unlink", race_cleanup)
+    with pytest.raises(PermissionError, match="receipt denied"):
+        converter.convert(source, target, overwrite=existing)
+    assert changed and target.read_bytes() == external_bytes
+    if existing:
+        assert receipt.read_bytes() == old_receipt
+        backups = list(tmp_path.glob("output.safetensors.*/previous.safetensors"))
+        assert len(backups) == 1 and backups[0].read_bytes() == old_weight
+    else:
+        assert not receipt.exists()

@@ -1,0 +1,205 @@
+{
+  "version": "0.1.3",
+  "baseline_version": "0.1.2",
+  "baseline_commit": "ca68ae6e7f5e9b98629012e143d9a87c0cffdb57",
+  "date": "2026-10-08",
+  "target_rounds": 20,
+  "completed_rounds": 20,
+  "status": "review_complete",
+  "reviewer": "/root/k6_crosscheck_third20",
+  "workflow": "Twenty separate subagent review turns. Root applies and validates confirmed fixes between turns.",
+  "scope": [
+    "Lite",
+    "Lite distill",
+    "Pro distill"
+  ],
+  "weights_modified": false,
+  "publication_evidence": "Release readback is recorded separately after this source audit is complete.",
+  "rounds": [
+    {
+      "round": 1,
+      "topic": "Independent published baseline and complete archive comparison",
+      "reviewer": "CleanHEADca68ae6/v0.1.2. Actual124ZIPfilesall byte-exactGitblobs,CRC/SHA/45runtimePython3.10ASTpass. GHasset/Registryinstall0.1.2 match. Prioractual20audit77testsconfirmed. Publicationstatussnapshot is clarified by externalreceipt.",
+      "root": "Read newly added code and established distinct third20-round cycle; prior published artifacts remain immutable.",
+      "result": "pass"
+    },
+    {
+      "round": 2,
+      "topic": "Atomic no-overwrite conversion publication",
+      "reviewer": "External thread created a complete safetensors target after existence checks. overwrite=False silently replaced it; existing-target and overwrite rollback controls passed.",
+      "root": "Default install now uses atomic Windows rename or POSIX hard-link creation and never backs up external targets. Added real-thread collision regression. 15 converter tests passed without skips.",
+      "result": "fixed"
+    },
+    {
+      "round": 3,
+      "topic": "No-clobber cross-platform proof and cleanup failure semantics",
+      "reviewer": "Real NTFS rename and real hard-link no-clobber verified independently; orphan-receipt, failed-rollback recovery controls passed. Workspace PermissionError masks original error or turns successful commit into reported failure.",
+      "root": "Workspace removal OSError now warns and retains temporary directory, preserving original failure or committed success. Added both result-path regressions; 17 converter tests pass without skips.",
+      "result": "fixed"
+    },
+    {
+      "round": 4,
+      "topic": "CLI cross-invocation partial corruption and atomic receipts",
+      "reviewer": "Real localhost HTTP with two independent writers produced BAD! final bytes with GOOD verified digest/receipt; external file created before replacement was overwritten.",
+      "root": "Per-destination FileLock now covers download/hash/install/receipt. Atomic no-clobber final install and unique staged/fsynced receipt added. Three race/publication regressions; all 10 CLI tests pass.",
+      "result": "fixed"
+    },
+    {
+      "round": 5,
+      "topic": "Hugging Face local-directory cache movement and priority changes",
+      "reviewer": "Three new CLI regressions independently pass. Real HF 1403-byte config downloaded, moved, corrupted at same size, repaired via force_download=False and then reused. Higher-priority-file race rejects publication and retains cache.",
+      "root": "Reviewed deployed hub local_dir metadata semantics and pinned non-LFS config SHA verification. No weights downloaded or modified.",
+      "result": "pass"
+    },
+    {
+      "round": 6,
+      "topic": "HTTP confirmation, disconnect ownership and malformed encoding",
+      "reviewer": "Actual aiohttp server proved invalid JSON payloads never start workers, disconnect finishes only current file with lock held, and worker errors permit retry. Invalid UTF-8 and unknown charset returned HTTP500.",
+      "root": "Unicode and codec lookup errors now become HTTP400. Two actual HTTP request regressions added; all four route tests pass.",
+      "result": "fixed"
+    },
+    {
+      "round": 7,
+      "topic": "Native fast INT8 singleton scales and typed rotation metadata",
+      "reviewer": "Actual Comfy mixed-precision Linear fast path fails on singleton scale ranks 2-5 despite validator acceptance. String false silently activates ConvRot and changes result (max abs difference 34.022). Canonical row scales and groups 64/256 pass.",
+      "root": "Single-value scales normalized to scalar views; resolved ConvRot flag must be bool. Six invalid flags plus five actual CUDA fast Linear cases added; 20 quantization tests pass without skips.",
+      "result": "fixed"
+    },
+    {
+      "round": 8,
+      "topic": "Fast native Linear verification and reference-tail latent operations",
+      "reviewer": "Six scale shapes normalized to scalar run actual Comfy native fast Linear with finite outputs and zero difference. Canonical I2 latent, stock LatentMultiply and seed behavior preserve mask/reference metadata; arbitrary mask correctly rejected.",
+      "root": "Checked supported batch-one NestedTensor contract; stock batch operations lacking NestedTensor clone/repeat are upstream limitations outside this extension's promised scope, not patched globally.",
+      "result": "pass"
+    },
+    {
+      "round": 9,
+      "topic": "Native single-caption text conditioning against upstream",
+      "reviewer": "Real K5 tokenizer/process_tokens/cropping with controlled tiny embeddings proves empty/short/long tokens 130/149/1153 have zero padding and contexts 1/20/1024; all-valid attention mask removed by official TE, so no dropped-pad-mask bug. Full-range metadata accepted, unsupported partial ranges/GLIGEN rejected.",
+      "root": "Checked single-caption/native conditioning and None audio fallback scope. No full TE forward or generalized masked prompting compatibility claimed.",
+      "result": "pass"
+    },
+    {
+      "round": 10,
+      "topic": "PiFlow pure math, scheduling, reference preservation and interruption",
+      "reviewer": "Actual upstream DXPolicy and policy_rollout match both stream shapes exactly. Six rollout cases (steps1/2/10 with/without reference) all match upstream with zero difference; exactly expected forward counts, clean tail throughout. Actual Comfy BaseException interrupt propagates by identity after one forward.",
+      "root": "Compared canonical grid10, shift5, eps, 128 substeps and final half-step; no unsupported scheduler or invalid zero-step behavior added.",
+      "result": "pass"
+    },
+    {
+      "round": 11,
+      "topic": "Real native serialization, precision archive, LoRA and prefetch lifecycle",
+      "reviewer": "Real native mixed-precision scalar normalization safetensors roundtrip runs exact BF16 INT8 output; unmarked sensitive FP32 preserved bytes/archive. Real ModelPatcher clone+LoRA patch changes output and unpatch restores exactly. Full tiny AV routes one execution wrapper, one block replacement and eight attention overrides; actual CUDA prefetch interrupt clears queues without thread growth.",
+      "root": "No heavy models loaded. Confirmed native Comfy hooks and managed memory path remain functional after auxiliary normalization.",
+      "result": "pass"
+    },
+    {
+      "round": 12,
+      "topic": "Rollback ownership under external updates and overwrite recovery",
+      "reviewer": "Default ownership guard independently passes real Windows/POSIX probes and six focused tests. Found overwrite=True recovery still replaces an external new inode with previous weights, consuming backup.",
+      "root": "Both rollback branches now check expected installed identity/size/mtime. External replacements or in-place edits are retained; prior backup and receipt preserved for recovery. Four default/overwrite external-update cases; 21 converter tests pass without skips.",
+      "result": "fixed"
+    },
+    {
+      "round": 13,
+      "topic": "Audio native interfaces, sample lengths and overwrite guard verification",
+      "reviewer": "Four default/overwrite external-update rollback cases independently pass. Real node methods with controlled tiny TOD tested five frame-rate/length cases; canonical sample counts match round(44100*frames/fps), before/after reference removal identical, stock decode follows own uncropped output and normalization contract. Fifteen decodes use managed force-full-load tracking.",
+      "root": "No decoder code changed; prior real TOD/BigVGAN validation remains applicable. Did not reload decoder weights or claim a fresh full decoder quality test.",
+      "result": "pass"
+    },
+    {
+      "round": 14,
+      "topic": "INT8 storage marker mismatch and scale backend dtypes",
+      "reviewer": "Actual native fast Linear silently truncates F32/F16/BF16 weight 0.25 to int8 zeros under INT8 marker, yielding finite zero instead of 16. F64 scales fail all native backends; F16/BF16/F32 work. Three released files' 920/920/1728 actual marker/scale values pass both prefixes; weights untouched.",
+      "root": "INT8-marked weights now require signed INT8 storage; scale dtype limited to actual supported F16/BF16/F32. Floating unmarked weights remain untouched and other quant formats are not banned. Added four dtype regressions; all 24 quant tests pass without skips.",
+      "result": "fixed"
+    },
+    {
+      "round": 15,
+      "topic": "MagCache CFG lanes, serial clone generations and bypass",
+      "reviewer": "Twelve focused quantization regressions independently pass. Twenty-four generations across steps1/4/10, retention0/.95, threshold.0001/1 and real parent/clone patchers maintain exact lane-specific residuals with separate and reversed-combined CFG calls. Actual pre_run/cleanup resets state; Lite base rejected, Pro distill clones bypass cache without changing parent.",
+      "root": "Retained documented serial single-device scope; no unverified concurrent multi-GPU support or ordinary Pro download introduced.",
+      "result": "pass"
+    },
+    {
+      "round": 16,
+      "topic": "Frontend dialog lifecycle, NDJSON Unicode and native workflow buttons",
+      "reviewer": "Actual Node suite passes four idempotent nonserializing workflow buttons and stream failures. Independent DOM harness: six dialogs, nine requests, one success-only refresh; busy close/cancel blocked, init errors keep download disabled, HTTP409/NDJSON error recover buttons, byte-wise UTF8 preserves Chinese paths.",
+      "root": "Validated backend newline contract and reader lock release. No actual browser UI test or unsupported no-newline stream compatibility claimed.",
+      "result": "pass"
+    },
+    {
+      "round": 17,
+      "topic": "Minimum dependency lock alias safety, unchanged models and native templates",
+      "reviewer": "Official filelock3.13.1 actually truncates destination when its new download lock is a hard link. Independent post-fix runs protect destination/partial/receipt aliases before acquire. HF revision and all 3+6 model/component metadata unchanged; nine pinned sources agree. Four workflows total 72 native edges; GUI and API formats each validate those 72 edges with matching topology; 68 required assets present; Comfy core clean.",
+      "root": "Lock resolve/samefile protection added before acquisition; three hard-link regressions, 13 CLI tests pass. Valid subfolder LoadImage input omitted from top-level menu is official behavior and was not misclassified as an extension bug.",
+      "result": "fixed"
+    },
+    {
+      "round": 18,
+      "topic": "Bilingual instructions, current/legacy HF CLI compatibility and licenses",
+      "reviewer": "Actual HF1.33 CLI ignores DiT in previous mixed --include example; old0.36 selected all patterns. Both updated cards run actual1.33 parser and official0.36 command code with all seven exact files and zero warnings. Four bilingual docs, seven exact socials, scope, versions, sampling and independent licenses agree. Real frontend refresh methods do not reset valid portrait subpath.",
+      "root": "Corrected both HF cards to seven explicit filenames with destination option last. Published only two Markdown files at e362f829afba54577b1b43180053ea99c015860e; remote bytes verified and all nine model/component payload metadata unchanged. Technical notes aligned with ready INT8 downloads and optional conversion.",
+      "result": "fixed"
+    },
+    {
+      "round": 19,
+      "topic": "Final regressions, Python compatibility, module imports and remote readback",
+      "reviewer": "Independently read actual 107-test receipt (did not rerun full suite). All 58 source Python parse as 3.10; all 45 runtime modules and root import on CPU, nine node classes and no loaded weights. Scoped Ruff F passes; only four unchanged diagnostics in two vendor exports. Final native JSON finite, service has six verified reused/zero downloaded and two HTTP400. Live HF cards byte/SHA exact; only two MD tree objects changed, all nine payload metadata unchanged.",
+      "root": "Ran complete pytest once after final runtime fixes: 107 passed/no skips/5.38s. Fresh native reference error 2.3841858e-7 recorded from actual console, not misattributed to old logs. Runtime assets and unchanged frontend tests remain valid.",
+      "result": "pass"
+    },
+    {
+      "round": 20,
+      "topic": "Atomic rollback capture, recovery safety and final release preparation",
+      "reviewer": "Found public-path stat followed by destructive rollback still races external replacements. Fixed atomic quarantine independently passes 12 real tiny threaded cases: Windows rename and POSIX-branch real NTFS hard links, both overwrite modes, replacement before capture/new formal after capture/foreign restore conflict. External formal weights preserved; quarantine/old backup/receipt retained on conflict. Six normal success/failure/no-overwrite controls pass. Final 109-test receipt, AST58, changed-file Ruff and 81 required package files including all68 runtime assets verified.",
+      "root": "Replaced check-then-delete/replace rollback with atomic capture and no-clobber restoration; workspace retention includes quarantine. Added two after-check race regressions: full suite109 passed/no skips/5.95s. Corrected round17 aggregate72-edge wording. Fresh0.1.3 release verifier requires all runtime assets, licenses, model provenance and four CLI tools; publication/readback follows the complete audit.",
+      "result": "fixed"
+    }
+  ],
+  "regressions": {
+    "passed": 109,
+    "skipped": 0,
+    "elapsed_seconds": 5.95,
+    "command": "python -X utf8 -m pytest --import-mode=importlib --confcutdir=tests tests -q --tb=short",
+    "exit_code": 0,
+    "python310_ast_files": 58,
+    "runtime_imports_passed": 45,
+    "node_classes": 9,
+    "weights_loaded_during_import": 0,
+    "frontend_checks": "Actual Node suite and independent DOM harness passed in round16; JS unchanged since.",
+    "ruff": "F checks pass excluding only two unchanged vendor export files (four existing F401/F403 diagnostics).",
+    "native_workflow_edges": 72,
+    "runtime_assets": 68
+  },
+  "native_checks": {
+    "checkpoint": "k6_lite_distill_int8_convrot.safetensors",
+    "mode": "I2AV",
+    "dimensions": [
+      256,
+      256
+    ],
+    "frames": 17,
+    "steps": 2,
+    "reference_max_error": 2.384185791015625e-7,
+    "finite": true,
+    "elapsed_seconds": 24.2190000000046,
+    "receipt": "D:\\kandinsky-6\\publication\\third-reviews\\final\\k6_lite_distill_int8_convrot_i2av_sample.json"
+  },
+  "service_checks": {
+    "verified_reused_components": 6,
+    "new_downloads": 0,
+    "bad_encoding_statuses": [
+      400,
+      400
+    ],
+    "receipt": "D:\\kandinsky-6\\publication\\third-reviews\\service_readback.json"
+  },
+  "huggingface_update": {
+    "revision": "e362f829afba54577b1b43180053ea99c015860e",
+    "previous_revision": "3ce9c8e77681becc3dcba06cbeb1bfee2c3f01ec",
+    "cards_readback_verified": true,
+    "unchanged_models": 9,
+    "receipt": "D:\\kandinsky-6\\publication\\receipts\\hf_third_review_cards.json"
+  }
+}

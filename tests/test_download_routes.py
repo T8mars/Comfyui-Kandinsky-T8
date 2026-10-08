@@ -77,3 +77,30 @@ def test_repeated_handler_cancel_keeps_lock_until_worker_finishes(tmp_path, monk
             await client.close()
 
     asyncio.run(run())
+
+
+@pytest.mark.parametrize("body,content_type", [
+    (b"\xff", "application/json"),
+    (b'{"confirm":true}', "application/json;charset=missingcodec"),
+])
+def test_invalid_json_encoding_is_bad_request_without_starting_worker(tmp_path, monkeypatch, body, content_type):
+    workers = []
+    monkeypatch.setattr(downloads, "model_plan", lambda *args: [{"directory": "vae", "name": "test.bin"}])
+    monkeypatch.setattr(downloads, "download_model", lambda *args: workers.append("started"))
+
+    async def run():
+        routes = web.RouteTableDef()
+        downloads.register_routes(routes, "test", tmp_path, tmp_path, {})
+        app = web.Application()
+        app.add_routes(routes)
+        client = TestClient(TestServer(app))
+        await client.start_server()
+        try:
+            response = await client.post("/test/download-models", data=body, headers={"Content-Type": content_type})
+            assert response.status == 400
+            assert "Invalid JSON" in await response.text()
+            assert workers == []
+        finally:
+            await client.close()
+
+    asyncio.run(run())
